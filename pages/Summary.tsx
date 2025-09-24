@@ -1,4 +1,5 @@
 
+
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Trash2, History, Footprints, Shield, Hand, Shirt, X, NotebookText, Download, Upload, FileUp, Dumbbell, CalendarDays, Weight, Repeat, MapPin, ChevronDown, Calendar, Save, BarChart4, ChevronLeft, ChevronRight, Clock, Flame, Zap, Gauge, TrendingUp, HeartPulse, ArrowUp, ArrowDown, Award } from 'lucide-react';
@@ -263,7 +264,8 @@ const Summary: React.FC = () => {
     title: string; 
   } | null>(null);
 
-  const allLogsForComparison = useMemo(() => {
+  // FIX: Explicitly type the useMemo to ensure correct type inference for allLogsForComparison.
+  const allLogsForComparison = useMemo<ExerciseLog[]>(() => {
     const logMap = new Map<string, ExerciseLog>();
     summaryLogs.forEach(log => logMap.set(log.id, log));
     dailyLogs.forEach(log => logMap.set(log.id, log));
@@ -553,7 +555,7 @@ const Summary: React.FC = () => {
                                      <div className="flex items-center gap-2"><span className="text-xs font-semibold bg-gray-700 text-cyan-300 rounded-full px-2 py-0.5">{logs.length} {logs.length > 1 ? 'registros' : 'registro'}</span><ChevronDown className={`w-6 h-6 text-cyan-400 transition-transform duration-300 ${isGroupExpanded ? 'rotate-180' : ''}`} /></div>
                                    </button>
                                    <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${!isGroupExpanded ? 'grid-rows-[0fr]' : 'grid-rows-[1fr]'}`}>
-                                     <div className="overflow-hidden"><div className="px-3 sm:px-4 pb-1 divide-y divide-gray-700/50">{logs.map(log => <LogDetails key={log.id} log={log} allLogs={allLogsForComparison} />)}</div></div>
+                                     <div className="overflow-hidden"><div className="px-3 sm:px-4 pb-1 divide-y divide-gray-700/50">{logs.map((log: ExerciseLog) => <LogDetails key={log.id} log={log} allLogs={allLogsForComparison} />)}</div></div>
                                    </div>
                                  </div>
                                )

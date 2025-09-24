@@ -1250,8 +1250,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       summaryNadaSessions: appState.summaryNadaSessions || [],
       simulatedDate: appState.simulatedDate,
     };
-    const date = new Date().toISOString().slice(0, 10);
-    downloadJSON(dataToExport, `progreso-gym-completo-${date}.json`);
+    const today = new Date();
+    const month = today.toLocaleDateString('es-ES', { month: 'short' }).replace(/\./g, '');
+    const capitalizedMonth = month.charAt(0).toUpperCase() + month.slice(1);
+    const day = today.getDate();
+    const filename = `GYM-${capitalizedMonth}-${day}.json`;
+    downloadJSON(dataToExport, filename);
   };
   
   const exportSummaryData = () => {
