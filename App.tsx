@@ -737,7 +737,7 @@ const AppContent: React.FC = () => {
       <MonthCalendarModal isOpen={isMonthCalendarOpen} onClose={() => setIsMonthCalendarOpen(false)} todayStr={todaysDateISO} />
       <DailySummaryModal date={dailySummaryDate} onClose={() => setDailySummaryDate(null)} onDateChange={setDailySummaryDate} />
       <div className="min-h-screen bg-transparent text-gray-100 font-sans">
-        <header className="sticky top-0 z-20 bg-gray-900/50 backdrop-blur-xl border-b border-white/10 p-4">
+        <header className="sticky top-0 z-20 bg-gray-900/50 backdrop-blur-xl border-b border-white/10 safe-header">
           <div className="container mx-auto flex items-center justify-between">
             {activeSede ? (
               <button
@@ -767,7 +767,7 @@ const AppContent: React.FC = () => {
 
         {/* Sidebar */}
         <aside className={`fixed top-0 left-0 h-full w-72 bg-gray-900/60 backdrop-blur-xl border-r border-white/10 shadow-2xl z-40 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-            <div className="p-5 flex flex-col h-full">
+            <div className="flex flex-col h-full safe-sidebar">
                 <button
                   onClick={handleHomeClick}
                   className={`flex items-center justify-center gap-4 text-center py-3 px-4 transition-all duration-300 focus:outline-none rounded-lg mb-6 w-full ${

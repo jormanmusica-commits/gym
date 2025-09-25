@@ -161,6 +161,22 @@
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
   }
+
+  /* Safe area insets for iOS devices */
+  .safe-header {
+    /* Replicates p-4 (1rem) and adds safe area */
+    padding-top: calc(1rem + env(safe-area-inset-top));
+    padding-left: calc(1rem + env(safe-area-inset-left));
+    padding-right: calc(1rem + env(safe-area-inset-right));
+    padding-bottom: 1rem;
+  }
+  .safe-sidebar {
+    /* Replicates p-5 (1.25rem) and adds safe area */
+    padding-top: calc(1.25rem + env(safe-area-inset-top));
+    padding-left: calc(1.25rem + env(safe-area-inset-left));
+    padding-right: 1.25rem;
+    padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
+  }
 </style>
 </head>
   <body class="bg-gray-900 text-white">

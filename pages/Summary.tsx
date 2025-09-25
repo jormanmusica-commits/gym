@@ -414,7 +414,8 @@ const Summary: React.FC = () => {
     setDeletionTarget(null);
   };
   
-  const LogDetails = ({ log, allLogs }: { log: ExerciseLog; allLogs: ExerciseLog[] }) => {
+  // FIX: Explicitly define LogDetails as a React.FC to correctly handle the 'key' prop during type checking.
+  const LogDetails: React.FC<{ log: ExerciseLog; allLogs: ExerciseLog[] }> = ({ log, allLogs }) => {
     const comparisons = useExerciseComparison(log, allLogs);
     const isNadaTab = log.day === 'Día 5';
 
