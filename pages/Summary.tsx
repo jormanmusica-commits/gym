@@ -265,7 +265,8 @@ const Summary: React.FC = () => {
   } | null>(null);
 
   // FIX: Explicitly type the useMemo to ensure correct type inference for allLogsForComparison.
-  const allLogsForComparison = useMemo<ExerciseLog[]>(() => {
+  // FIX: Explicitly type the 'allLogsForComparison' constant. This resolves an issue where TypeScript was incorrectly inferring its type as 'any' within nested map functions, causing an assignment error when passing it as a prop to the LogDetails component.
+  const allLogsForComparison: ExerciseLog[] = useMemo<ExerciseLog[]>(() => {
     const logMap = new Map<string, ExerciseLog>();
     summaryLogs.forEach(log => logMap.set(log.id, log));
     dailyLogs.forEach(log => logMap.set(log.id, log));
