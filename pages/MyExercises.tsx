@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { PlusCircle, Trash2, Pencil, ArrowUp, ArrowDown } from 'lucide-react';
+import { PlusCircle, Trash2, Pencil, ArrowUp, ArrowDown, Activity } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import SedeDeletionModal from '../components/SedeDeletionModal';
 
@@ -50,9 +50,7 @@ const MyExercises: React.FC<MyExercisesProps> = ({ onSedeSelected }) => {
       <div className="flex flex-col items-center justify-center text-center animate-fadeInUp min-h-[calc(100vh-150px)] p-4">
         <div className="bg-gray-900/60 backdrop-blur-md border border-white/10 rounded-2xl p-8 sm:p-12 shadow-2xl shadow-cyan-500/10">
           <div className="mb-6 flex justify-center">
-             <span className="text-8xl font-black bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500 animate-pulse-slow select-none">
-              J
-            </span>
+             <Activity className="w-24 h-24 text-cyan-400 animate-pulse-slow" />
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400 tracking-tight">
             Sede Activa: {activeSede}
@@ -84,9 +82,7 @@ const MyExercises: React.FC<MyExercisesProps> = ({ onSedeSelected }) => {
       />
       <div className="bg-gray-900/60 backdrop-blur-md border border-white/10 rounded-2xl p-6 sm:p-10 shadow-2xl shadow-cyan-500/10 w-full max-w-md">
         <div className="mb-6 flex justify-center">
-           <span className="text-8xl font-black bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500 animate-pulse-slow select-none">
-            J
-          </span>
+           <Activity className="w-24 h-24 text-cyan-400 animate-pulse-slow" />
         </div>
         <h1 className="text-2xl sm:text-3xl font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400 tracking-tight">
           Tu Progreso Empieza Aquí
