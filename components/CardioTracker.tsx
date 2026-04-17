@@ -1,35 +1,12 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import type { NadaMetrics, NadaSession } from '../types';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import type { ExerciseLog, NadaMetrics, NadaSession } from '../types';
 import { useAppContext } from '../context/AppContext';
 import { PlusCircle, MinusCircle, Zap, Gauge, TrendingUp, Flame, CalendarDays, NotebookText, Check, MapPin, Plus, Clock, X, ChevronUp, ChevronDown } from 'lucide-react';
 import CalendarModal from './CalendarModal';
-
-// --- HELPER FUNCTIONS ---
-
-function parseCustomDate(dateString: string): Date | null {
-  if (typeof dateString !== 'string' || !dateString.trim()) return null;
-  if (dateString.includes('-')) {
-    const date = new Date(dateString + 'T00:00:00');
-    if (!isNaN(date.getTime())) {
-      return date;
-    }
-  }
-  return null;
-}
-
-const formatDisplayDate = (dateString: string): string => {
-  const date = parseCustomDate(dateString);
-  if (date) {
-    const formatted = date.toLocaleDateString('es-ES', {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'short',
-    });
-    return (formatted.charAt(0).toUpperCase() + formatted.slice(1)).replace(/[,.]/g, '');
-  }
-  return dateString;
-};
+import { parseCustomDate, formatDisplayDate } from '../lib/metrics';
+import { useExerciseComparison } from '../hooks/useExerciseComparison';
+import { MetricItem } from './MetricItem';
 
 const formatMetric = (value: string | undefined, unit: string) => {
     if (!value || value.trim() === '') return '-';
@@ -249,8 +226,29 @@ const TimePickerModal: React.FC<{ initialValue: string; onSave: (value: string) 
 };
 
 const CardioTracker: React.FC<{ dayName: string; }> = ({ dayName }) => {
-  const { addNadaSession, workoutDays, updateWorkoutDayForm, clearNadaForm, activeSede, sedeColorStyles } = useAppContext();
+  const { addNadaSession, workoutDays, updateWorkoutDayForm, clearNadaForm, activeSede, sedeColorStyles, summaryLogs, dailyLogs } = useAppContext();
   const { date, title, metrics, notes } = workoutDays[dayName]?.nada || {};
+  
+  const allLogsForComparison = useMemo(() => {
+    const logMap = new Map<string, ExerciseLog>();
+    summaryLogs.forEach(log => logMap.set(log.id, log));
+    dailyLogs.forEach(log => logMap.set(log.id, log));
+    return Array.from(logMap.values());
+  }, [dailyLogs, summaryLogs]);
+
+  const logForComparison = useMemo(() => ({
+    id: 'current-cardio',
+    date: date || '',
+    exerciseName: (title || 'Combinados').trim().toUpperCase(),
+    sede: activeSede || '',
+    series: metrics?.speed,
+    reps: metrics?.distance,
+    kilos: metrics?.incline,
+    tiempo: metrics?.time,
+    calorias: metrics?.calories
+  }), [date, title, metrics, activeSede]);
+
+  const comparisons = useExerciseComparison(logForComparison, allLogsForComparison);
   
   const [showNotification, setShowNotification] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
@@ -349,12 +347,12 @@ const CardioTracker: React.FC<{ dayName: string; }> = ({ dayName }) => {
               <div className="rounded-lg -m-3 p-3 mt-1" role="region" aria-label="Métricas guardadas">
                 {hasMetrics && (
                   <div className="mt-4 pt-4 border-t border-gray-700/50">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-3 text-sm">
-                      {metrics.speed?.trim() && <div className="flex items-center gap-2"><Zap className="w-5 h-5 text-cyan-400 flex-shrink-0"/><div><p className="text-xs text-gray-400">Velocidad</p><p className="font-semibold text-white">{formatMetric(metrics.speed, 'KM/H')}</p></div></div>}
-                      {metrics.distance?.trim() && <div className="flex items-center gap-2"><Gauge className="w-5 h-5 text-cyan-400 flex-shrink-0"/><div><p className="text-xs text-gray-400">Distancia</p><p className="font-semibold text-white">{formatMetric(metrics.distance, metrics.distanceUnit || 'KM')}</p></div></div>}
-                      {metrics.incline?.trim() && <div className="flex items-center gap-2"><TrendingUp className="w-5 h-5 text-cyan-400 flex-shrink-0"/><div><p className="text-xs text-gray-400">Inclinación</p><p className="font-semibold text-white">{formatMetric(metrics.incline, '%')}</p></div></div>}
-                      {metrics.time?.trim() && <div className="flex items-center gap-2"><Clock className="w-5 h-5 text-cyan-400 flex-shrink-0"/><div><p className="text-xs text-gray-400">Tiempo</p><p className="font-semibold text-white">{metrics.time} Min</p></div></div>}
-                      {metrics.calories?.trim() && <div className="flex items-center gap-2"><Flame className="w-5 h-5 text-cyan-400 flex-shrink-0"/><div><p className="text-xs text-gray-400">Calorías</p><p className="font-semibold text-white">{metrics.calories || '-'}</p></div></div>}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-x-4 gap-y-3 text-sm">
+                      <MetricItem label="Velocidad" value={metrics.speed} unit="Km/h" Icon={Zap} comparison={comparisons.series} />
+                      <MetricItem label="Distancia" value={metrics.distance} unit={metrics.distanceUnit === 'MTS' ? 'm' : 'Km'} Icon={Gauge} comparison={comparisons.reps} />
+                      <MetricItem label="Inclinación" value={metrics.incline} unit="%" Icon={TrendingUp} comparison={comparisons.kilos} />
+                      <MetricItem label="Tiempo" value={metrics.time} unit="Min" Icon={Clock} comparison={comparisons.tiempo} />
+                      <MetricItem label="Calorías" value={metrics.calories} unit="Kcal" Icon={Flame} comparison={comparisons.calorias} />
                     </div>
                   </div>
                 )}

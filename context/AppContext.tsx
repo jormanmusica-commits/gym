@@ -120,11 +120,7 @@ const dayLabels: { [key:string]: string} = {
 const LOCAL_STORAGE_KEY = 'gymProgressionAppState_v2';
 
 // --- HELPERS ---
-const parseMetric = (value: string | undefined): number | null => {
-    if (value === undefined || value === null || value.trim() === '') return null;
-    const num = parseFloat(value.replace(',', '.'));
-    return isNaN(num) ? null : num;
-};
+import { parseMetric } from '../lib/metrics';
 
 const calculateIMC = (weight: string, height: string): string => {
     const weightNum = parseMetric(weight);

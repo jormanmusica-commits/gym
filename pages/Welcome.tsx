@@ -5,47 +5,7 @@ import { useAppContext } from '../context/AppContext';
 import { BarChart4, History, Weight, Repeat, MapPin, NotebookText, Clock, Flame, Zap, Gauge, TrendingUp, Award, ArrowUp, ArrowDown, Trophy } from 'lucide-react';
 import type { ExerciseLog } from '../types';
 
-// --- PERFORMANCE HELPER FUNCTIONS (Consistent with Summary page) ---
-function parseCustomDate(dateString: string): Date | null {
-  if (typeof dateString !== 'string' || !dateString.trim()) return null;
-  if (dateString.includes('-')) {
-    const date = new Date(dateString + 'T00:00:00');
-    if (!isNaN(date.getTime())) {
-      return date;
-    }
-  }
-  return null;
-}
-
-const formatFullDisplayDate = (dateString: string): string => {
-    const date = parseCustomDate(dateString);
-    if (date) {
-      const weekday = date.toLocaleDateString('es-ES', { weekday: 'long' });
-      const day = date.getDate();
-      const month = date.toLocaleDateString('es-ES', { month: 'long' });
-      const year = date.getFullYear();
-      
-      const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-
-      return `${capitalize(weekday)} ${day} de ${capitalize(month)} de ${year}`;
-    }
-    return dateString;
-};
-
-const parseMetric = (value: string | undefined): number | null => {
-    if (value === undefined || value === null || value.trim() === '') return null;
-    const num = parseFloat(value.replace(',', '.'));
-    return isNaN(num) ? null : num;
-};
-
-const parseTimeToSeconds = (timeStr: string | undefined): number | null => {
-    if (!timeStr) return null;
-    const parts = timeStr.split(':').map(Number);
-    if (parts.some(isNaN)) return null;
-    if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
-    if (parts.length === 2) return parts[0] * 60 + parts[1];
-    return null;
-};
+import { parseCustomDate, parseMetric, formatFullDisplayDate } from '../lib/metrics';
 
 type ComparisonStatus = 'increase' | 'decrease' | 'same' | 'new';
 
@@ -142,30 +102,8 @@ const getPerformanceData = (allLogs: ExerciseLog[]) => {
     return { lastLog, personalRecord, comparison, isNewRecord };
 };
 
-const MetricItem: React.FC<{
-  label: string;
-  value: string | undefined;
-  unit: string;
-  Icon: React.ElementType;
-  comparison?: ComparisonStatus;
-}> = ({ label, value, unit, Icon, comparison }) => {
-    if (!value?.trim()) return null;
-    const colorClass = comparison === 'increase' ? 'text-green-400' : comparison === 'decrease' ? 'text-red-400' : 'text-white';
-    
-    return (
-        <div className="flex items-center gap-2">
-            <Icon className="w-5 h-5 text-cyan-400 flex-shrink-0" />
-            <div>
-                <p className="text-xs text-gray-400">{label}</p>
-                <p className={`font-semibold flex items-center gap-1 ${colorClass}`}>
-                    {comparison === 'increase' && <ArrowUp className="w-3 h-3" />}
-                    {comparison === 'decrease' && <ArrowDown className="w-3 h-3" />}
-                    {value} {unit}
-                </p>
-            </div>
-        </div>
-    );
-};
+import { MetricItem } from '../components/MetricItem';
+import { parseTimeToSeconds } from '../lib/metrics';
 
 // --- WELCOME PAGE COMPONENT ---
 interface WelcomePageProps {
