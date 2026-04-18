@@ -231,6 +231,22 @@ const ConsejosPage: React.FC = () => {
                         </div>
                         <div className="overflow-y-auto pr-2 space-y-4 no-scrollbar">
                             <input type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="Título de la nota" className={`${inputClasses} font-bold text-lg`} />
+                            
+                            <div>
+                              <h3 className="text-sm font-semibold text-gray-400 mb-2">Links de Video</h3>
+                               <div className="flex flex-wrap gap-2">
+                                  {(formData.videoLinks || []).map((link, index) => (
+                                      <div key={link.id} className="relative group bg-cyan-600 text-white font-semibold text-sm py-1 px-3 rounded-full flex items-center gap-2">
+                                          <span>{link.name}</span>
+                                          <button onClick={() => setFormData({...formData, videoLinks: (formData.videoLinks || []).filter(l => l.id !== link.id)})} className="text-white/70 hover:text-white"><X className="w-4 h-4" /></button>
+                                      </div>
+                                  ))}
+                                  <button onClick={handlePasteVideoLinkInModal} className="bg-gray-700/50 border-2 border-dashed border-gray-600 rounded-full flex items-center justify-center text-gray-400 hover:text-orange-400 hover:border-orange-500 transition-colors py-1 px-3 gap-2 text-sm">
+                                      <ClipboardPaste className="w-4 h-4"/> Pegar
+                                  </button>
+                              </div>
+                            </div>
+
                             <textarea value={formData.content} onChange={e => setFormData({...formData, content: e.target.value})} placeholder="Escribe tu consejo o nota aquí..." className={`${inputClasses} h-40 resize-none`} />
                             
                             <div>
@@ -244,21 +260,6 @@ const ConsejosPage: React.FC = () => {
                                   ))}
                                   <button onClick={() => fileInputRef.current?.click()} className="w-20 h-20 bg-gray-700/50 border-2 border-dashed border-gray-600 rounded-lg flex items-center justify-center text-gray-400 hover:text-cyan-400 hover:border-cyan-500 transition-colors">
                                       <Camera className="w-8 h-8"/>
-                                  </button>
-                              </div>
-                            </div>
-                            
-                            <div>
-                              <h3 className="text-sm font-semibold text-gray-400 mb-2">Links de Video</h3>
-                               <div className="flex flex-wrap gap-2">
-                                  {(formData.videoLinks || []).map((link, index) => (
-                                      <div key={link.id} className="relative group bg-cyan-600 text-white font-semibold text-sm py-1 px-3 rounded-full flex items-center gap-2">
-                                          <span>{link.name}</span>
-                                          <button onClick={() => setFormData({...formData, videoLinks: (formData.videoLinks || []).filter(l => l.id !== link.id)})} className="text-white/70 hover:text-white"><X className="w-4 h-4" /></button>
-                                      </div>
-                                  ))}
-                                  <button onClick={handlePasteVideoLinkInModal} className="bg-gray-700/50 border-2 border-dashed border-gray-600 rounded-full flex items-center justify-center text-gray-400 hover:text-orange-400 hover:border-orange-500 transition-colors py-1 px-3 gap-2 text-sm">
-                                      <ClipboardPaste className="w-4 h-4"/> Pegar
                                   </button>
                               </div>
                             </div>
