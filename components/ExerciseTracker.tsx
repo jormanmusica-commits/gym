@@ -442,44 +442,46 @@ const ExerciseLogModal: React.FC<ExerciseLogModalProps> = ({ isOpen, onClose, on
                 <div className="bg-gray-800/80 backdrop-blur-xl border border-white/10 rounded-lg shadow-xl p-6 w-full max-w-lg m-4 animate-scaleIn flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
                     <div className="flex justify-between items-center mb-4 flex-shrink-0">
                         <div className="w-10 h-10 md:hidden" /> {/* Spacer for centered header on mobile */}
-                        <h2 className="text-xl font-bold text-cyan-400 text-center flex-grow uppercase tracking-widest">
-                            {initialData ? 'Editar Ejercicio' : 'Añadir Ejercicio'}
+                        <h2 className="text-xl font-bold text-cyan-400 text-center flex-grow uppercase tracking-widest px-4 break-words">
+                            {initialData ? (initialData.exerciseName || formData.exerciseName) : 'Añadir Ejercicio'}
                         </h2>
                         <button onClick={onClose} className="p-2 text-gray-400 hover:text-white transition" aria-label="Cerrar"><X className="w-6 h-6" /></button>
                     </div>
                     
                     <div className="overflow-y-auto pr-2 space-y-4 no-scrollbar">
-                        <div className="relative" ref={suggestionBoxRef}>
-                            <input
-                                type="text"
-                                value={formData.exerciseName}
-                                onChange={(e) => handleInputChange('exerciseName', e.target.value)}
-                                onFocus={handleNameInputFocus}
-                                placeholder="NOMBRE DEL EJERCICIO"
-                                className="w-full text-xl font-extrabold text-cyan-400 bg-gray-700/50 border border-gray-600 rounded-md py-2 px-3 transition placeholder:text-cyan-400/50 tracking-wider focus:outline-none focus:ring-2 focus:ring-cyan-500/70 focus:border-transparent"
-                                autoComplete="off"
-                            />
-                            {isSuggestionsVisible && suggestions.length > 0 && (
-                                <ul className="absolute z-10 w-full bg-gray-700 border border-gray-600 rounded-md mt-1 max-h-48 overflow-y-auto custom-scrollbar">
-                                    {suggestions.map(suggestion => (
-                                        <li
-                                            key={suggestion}
-                                            onMouseDown={() => handleSuggestionClick(suggestion)}
-                                            className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-cyan-600 text-white group"
-                                        >
-                                            <span>{suggestion}</span>
-                                            <button
-                                                onMouseDown={(e) => handleDeleteSuggestion(e, suggestion)}
-                                                className="p-1 rounded-full text-gray-400 group-hover:text-white hover:bg-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                aria-label={`Eliminar sugerencia ${suggestion}`}
+                        {!initialData && (
+                            <div className="relative" ref={suggestionBoxRef}>
+                                <input
+                                    type="text"
+                                    value={formData.exerciseName}
+                                    onChange={(e) => handleInputChange('exerciseName', e.target.value)}
+                                    onFocus={handleNameInputFocus}
+                                    placeholder="NOMBRE DEL EJERCICIO"
+                                    className="w-full text-xl font-extrabold text-cyan-400 bg-gray-700/50 border border-gray-600 rounded-md py-2 px-3 transition placeholder:text-cyan-400/50 tracking-wider focus:outline-none focus:ring-2 focus:ring-cyan-500/70 focus:border-transparent"
+                                    autoComplete="off"
+                                />
+                                {isSuggestionsVisible && suggestions.length > 0 && (
+                                    <ul className="absolute z-10 w-full bg-gray-700 border border-gray-600 rounded-md mt-1 max-h-48 overflow-y-auto custom-scrollbar">
+                                        {suggestions.map(suggestion => (
+                                            <li
+                                                key={suggestion}
+                                                onMouseDown={() => handleSuggestionClick(suggestion)}
+                                                className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-cyan-600 text-white group"
                                             >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </div>
+                                                <span>{suggestion}</span>
+                                                <button
+                                                    onMouseDown={(e) => handleDeleteSuggestion(e, suggestion)}
+                                                    className="p-1 rounded-full text-gray-400 group-hover:text-white hover:bg-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    aria-label={`Eliminar sugerencia ${suggestion}`}
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
+                        )}
                          {formData.media.length > 0 && (
                              <div>
                                 <div className="flex flex-wrap gap-2">
