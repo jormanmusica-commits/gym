@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Trash2, X, ClipboardPaste, Pencil, Check, Shirt, Footprints, Shield, Hand, Layers3, Dumbbell, HeartPulse } from 'lucide-react';
-import VideoPlayerModal from './VideoPlayerModal';
 import ConfirmationModal from './ConfirmationModal';
 
 const dayConfig: { [key: string]: { title: string; groups: string[]; icon: React.ElementType } } = {
@@ -92,7 +91,7 @@ const MuscleLinkManager: React.FC<MuscleLinkManagerProps> = ({ dayName, muscleNa
                 ) : (
                   <div className="relative group">
                     <button 
-                      onClick={() => onPlayVideo(link.url)} 
+                      onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')} 
                       className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:brightness-110 text-white font-bold py-1.5 px-3 rounded-md transition-all duration-300 text-center truncate text-sm">
                       {link.name}
                     </button>
@@ -127,19 +126,12 @@ interface MuscleGroupModalProps {
 }
 
 const MuscleGroupModal: React.FC<MuscleGroupModalProps> = ({ isOpen, onClose, dayName, config }) => {
-  const [selectedVideoUrl, setSelectedVideoUrl] = useState<string | null>(null);
-
   if (!isOpen) return null;
 
   const Icon = config.icon || Layers3;
 
   return (
     <>
-      <VideoPlayerModal 
-        isOpen={!!selectedVideoUrl}
-        onClose={() => setSelectedVideoUrl(null)}
-        videoUrl={selectedVideoUrl || ''}
-      />
       <div
         className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 animate-fadeIn"
         onClick={onClose}
@@ -162,7 +154,7 @@ const MuscleGroupModal: React.FC<MuscleGroupModalProps> = ({ isOpen, onClose, da
           </div>
           <div className="grid grid-cols-2 gap-6">
             {config.groups.map((groupName) => (
-              <MuscleLinkManager key={groupName} dayName={dayName} muscleName={groupName} onPlayVideo={setSelectedVideoUrl} />
+              <MuscleLinkManager key={groupName} dayName={dayName} muscleName={groupName} onPlayVideo={(url) => window.open(url, '_blank', 'noopener,noreferrer')} />
             ))}
           </div>
         </div>

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Trash2, Sparkles, X, ClipboardPaste, Pencil, Check } from 'lucide-react';
-import VideoPlayerModal from '../components/VideoPlayerModal';
 import ConfirmationModal from '../components/ConfirmationModal';
 
 interface StretchingManagerProps {
@@ -11,7 +10,6 @@ interface StretchingManagerProps {
 
 const StretchingManager: React.FC<StretchingManagerProps> = ({ isOpen, onClose }) => {
   const { stretchingLinks, addStretchingLink, removeStretchingLink, updateStretchingLinkName } = useAppContext();
-  const [selectedVideoUrl, setSelectedVideoUrl] = useState<string | null>(null);
   const [editingLink, setEditingLink] = useState<{ id: string; name: string } | null>(null);
   const [linkToDelete, setLinkToDelete] = useState<{ id: string; name: string } | null>(null);
 
@@ -44,11 +42,6 @@ const StretchingManager: React.FC<StretchingManagerProps> = ({ isOpen, onClose }
 
   return (
     <>
-      <VideoPlayerModal 
-        isOpen={!!selectedVideoUrl}
-        onClose={() => setSelectedVideoUrl(null)}
-        videoUrl={selectedVideoUrl || ''}
-      />
       <ConfirmationModal
         isOpen={!!linkToDelete}
         onClose={() => setLinkToDelete(null)}
@@ -111,7 +104,7 @@ const StretchingManager: React.FC<StretchingManagerProps> = ({ isOpen, onClose }
                    ) : (
                       <div className="relative group">
                         <button
-                          onClick={() => setSelectedVideoUrl(link.url)}
+                          onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')}
                           className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:brightness-110 text-white font-bold py-2 px-4 rounded-md transition-all duration-300 text-center truncate"
                         >
                           {link.name}

@@ -5,7 +5,6 @@ import { useAppContext } from '../context/AppContext';
 import { Lightbulb, Plus, Trash2, Camera, X, Pencil, Check, ChevronLeft, ChevronRight, ClipboardPaste, Shirt, Footprints, Shield, Hand, HeartPulse, Video } from 'lucide-react';
 import type { ConsejoItem, ExerciseMedia, LinkItem } from '../types';
 import ConfirmationModal from '../components/ConfirmationModal';
-import VideoPlayerModal from '../components/VideoPlayerModal';
 
 // Local Lightbox component (reused from other pages for consistency)
 interface MediaLightboxProps {
@@ -114,7 +113,6 @@ const ConsejosPage: React.FC = () => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     
     // States for video links on main cards
-    const [selectedVideoUrl, setSelectedVideoUrl] = useState<string | null>(null);
     const [editingLink, setEditingLink] = useState<{ consejoId: string; linkId: string; name: string } | null>(null);
     const [linkToDelete, setLinkToDelete] = useState<{ consejoId: string; linkId: string; name: string } | null>(null);
 
@@ -210,8 +208,6 @@ const ConsejosPage: React.FC = () => {
     return (
         <div className="space-y-4 pb-24">
             <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*,video/*" />
-            
-            <VideoPlayerModal isOpen={!!selectedVideoUrl} onClose={() => setSelectedVideoUrl(null)} videoUrl={selectedVideoUrl || ''} />
             
             {lightboxMedia && <MediaLightbox 
                 allMedia={lightboxMedia.allMedia}
@@ -361,7 +357,7 @@ const ConsejosPage: React.FC = () => {
                                                 ) : (
                                                   <div className="relative group">
                                                     <button
-                                                      onClick={() => setSelectedVideoUrl(link.url)}
+                                                      onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')}
                                                       className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:brightness-110 text-white font-bold py-2 px-4 rounded-md transition-all duration-300 text-center truncate"
                                                     >
                                                       {link.name}
@@ -417,7 +413,7 @@ const ConsejosPage: React.FC = () => {
                                                         {links.map((link) => (
                                                             <li key={link.id}>
                                                                 <button
-                                                                    onClick={() => setSelectedVideoUrl(link.url)}
+                                                                    onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')}
                                                                     className="w-full bg-cyan-600/20 hover:bg-cyan-600/40 text-cyan-300 text-sm font-semibold py-2 px-3 rounded-md border border-cyan-500/30 transition-all duration-300 text-left truncate flex items-center justify-between group"
                                                                 >
                                                                     <span>{link.name}</span>
@@ -459,7 +455,7 @@ const ConsejosPage: React.FC = () => {
                                             {stretchingLinks.map(link => (
                                                 <li key={link.id}>
                                                     <button
-                                                        onClick={() => setSelectedVideoUrl(link.url)}
+                                                        onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')}
                                                         className="w-full bg-green-600/10 hover:bg-green-600/20 text-green-300 text-sm font-semibold py-2 px-3 rounded-md border border-green-500/20 transition-all duration-300 text-left truncate flex items-center justify-between group"
                                                     >
                                                         <span>{link.name}</span>
@@ -480,7 +476,7 @@ const ConsejosPage: React.FC = () => {
                                             {postureLinks.map(link => (
                                                 <li key={link.id}>
                                                     <button
-                                                        onClick={() => setSelectedVideoUrl(link.url)}
+                                                        onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')}
                                                         className="w-full bg-purple-600/10 hover:bg-purple-600/20 text-purple-300 text-sm font-semibold py-2 px-3 rounded-md border border-purple-500/20 transition-all duration-300 text-left truncate flex items-center justify-between group"
                                                     >
                                                         <span>{link.name}</span>
