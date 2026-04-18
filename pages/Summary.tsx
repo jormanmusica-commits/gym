@@ -359,20 +359,22 @@ const Summary: React.FC = () => {
 
           return (
             <div key={session.date} style={{ animationDelay: `${sessionIndex * 150}ms` }} className="bg-gray-900/60 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden animate-zoomInPop opacity-0">
-              <div className="p-4 sm:p-6 bg-gray-800/40">
-                <div className="flex flex-col items-center justify-center gap-3">
+              <div className="relative p-4 sm:p-6 bg-gray-800/40">
+                <div className="flex flex-col items-center justify-center gap-1">
                   <h2 className="text-xl sm:text-2xl font-extrabold text-white flex items-center justify-center gap-3 px-12">
                     <Calendar className="w-6 h-6 text-cyan-400 flex-shrink-0"/>
                     <span className="truncate text-center">{isToday ? 'Entrenamiento de Hoy' : formatFullDisplayDate(session.date)}</span>
                   </h2>
-                  <div className="flex items-center justify-center gap-4">
+                  
+                  <div className="w-full relative flex justify-center items-center py-1">
                     {session.logs.length > 0 && session.logs[0].sede && (
                          <span className={`${getSedeColor(session.logs[0].sede)} text-xs font-black px-3 py-1.5 rounded-full flex items-center gap-1 font-mono uppercase tracking-widest leading-none shadow-md border border-white/10`}>
                             <MapPin className="w-3 h-3"/>
                             {session.logs[0].sede}
                          </span>
                     )}
-                    <div className="flex items-center gap-1 bg-white/5 rounded-full px-1 py-0.5 border border-white/5 shadow-inner">
+                    
+                    <div className="absolute right-0 flex items-center gap-1 bg-white/5 rounded-full px-1 py-0.5 border border-white/5 shadow-inner">
                       <button onClick={() => setExportOptions({ title: `Exportar Sesión`, onExportJson: () => downloadJSON({ summaryLogs: session.logs }, `sesion-${session.date}.json`), onExportText: () => downloadTXT(generateSessionText(session.logs, session.date, session.totalCalories), `sesion-${session.date}.txt`) })} className="p-2 text-gray-400 hover:text-cyan-500 hover:bg-cyan-500/10 rounded-full transition-colors" aria-label={`Exportar sesión`} title="Exportar sesión"><Save className="w-5 h-5" /></button>
                       <div className="w-px h-4 bg-white/10 mx-0.5"></div>
                       <button onClick={() => setDeletionTarget({ type: 'session', id: session.date, name: `la sesión del ${formatFullDisplayDate(session.date)}`, sessionLogs: session.logs })} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-full transition-colors" aria-label={`Eliminar sesión`} title="Eliminar sesión"><Trash2 className="w-5 h-5" /></button>
