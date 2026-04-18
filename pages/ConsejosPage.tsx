@@ -183,15 +183,10 @@ const ConsejosPage: React.FC = () => {
             const linkUrl = text.trim();
             const currentLinks = formData.videoLinks || [];
             if (currentLinks.some(l => l.url === linkUrl)) {
-              // Even if already exists, open it as per user request "cuando lo pegue lo abra"
-              window.open(linkUrl, '_blank', 'noopener,noreferrer');
               return;
             }
             const newLink: LinkItem = { id: crypto.randomUUID(), url: linkUrl, name: `Video ${currentLinks.length + 1}` };
             setFormData(prev => ({ ...prev, videoLinks: [...currentLinks, newLink] }));
-            
-            // Open the link immediately after pasting
-            window.open(linkUrl, '_blank', 'noopener,noreferrer');
         }
       } catch (err) {
         console.error('Failed to read clipboard contents: ', err);

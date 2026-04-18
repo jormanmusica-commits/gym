@@ -16,6 +16,7 @@ interface AppState {
   dailyLogs: ExerciseLog[];
   summaryLogs: ExerciseLog[];
   sedeOrder: string[];
+  activeTab: string;
   // Fix: Add state for Cardio/Nada sessions.
   dailyNadaSessions: NadaSession[];
   summaryNadaSessions: NadaSession[];
@@ -24,8 +25,10 @@ interface AppState {
 
 interface AppContextType {
   activeSede: string | null;
+  activeTab: string;
   sedeNames: string[];
   setActiveSede: (sede: string | null) => void;
+  setActiveTab: (tab: string) => void;
   renameSede: (oldName: string, newName: string) => boolean;
   removeSedeAndData: (sedeName: string) => void;
   removeSedeOnly: (sedeName: string) => void;
@@ -261,6 +264,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         dailyNadaSessions: [],
         summaryNadaSessions: [],
         sedeOrder: Object.keys(initialSedes),
+        activeTab: 'Inicio',
         simulatedDate: null,
     };
     try {
@@ -380,7 +384,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       return {
         ...defaultState,
         ...savedState,
-        activeSede: null,
+        activeSede: savedState.activeSede !== undefined ? savedState.activeSede : null,
+        activeTab: savedState.activeTab || 'Inicio',
         sedes: mergedSedes,
         sedeOrder,
       };
@@ -549,6 +554,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
   };
   
+  const setActiveTab = (tab: string) => {
+    setAppState(prev => ({ ...prev, activeTab: tab }));
+  };
+
   const renameSede = (oldName: string, newName: string): boolean => {
     const normalizedNewName = newName.trim().toUpperCase();
     if (!normalizedNewName || normalizedNewName === oldName) return false;
@@ -1631,8 +1640,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const value: AppContextType = {
     activeSede,
+    activeTab: appState.activeTab,
     sedeNames: appState.sedeOrder,
     setActiveSede,
+    setActiveTab,
     renameSede,
     removeSedeAndData,
     removeSedeOnly,

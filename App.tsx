@@ -584,8 +584,11 @@ const SedeWeekCalendar: React.FC<{ onDateClick: (date: string) => void; onEmptyD
 
 
 const AppContent: React.FC = () => {
-  const { activeSede, setActiveSede, todaysDateISO, simulatedDate, setSimulatedDate } = useAppContext();
-  const [activeTab, setActiveTab] = useState('Inicio');
+  const { 
+    activeSede, setActiveSede, 
+    activeTab, setActiveTab,
+    todaysDateISO, simulatedDate, setSimulatedDate 
+  } = useAppContext();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMonthCalendarOpen, setIsMonthCalendarOpen] = useState(false);
   const [dailySummaryDate, setDailySummaryDate] = useState<string | null>(null);
