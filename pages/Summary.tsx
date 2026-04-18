@@ -375,12 +375,12 @@ const Summary: React.FC = () => {
 
           return (
             <div key={session.date} style={{ animationDelay: `${sessionIndex * 150}ms` }} className="bg-gray-900/60 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden animate-zoomInPop opacity-0">
-              <div className="flex items-center justify-between p-4 sm:p-6 bg-gray-800/40">
-                <h2 className="text-xl sm:text-2xl font-extrabold text-white flex items-center gap-3 truncate">
+              <div className="relative p-4 sm:p-6 bg-gray-800/40">
+                <h2 className="text-xl sm:text-2xl font-extrabold text-white flex items-center justify-center gap-3">
                   <Calendar className="w-6 h-6 text-cyan-400 flex-shrink-0"/>
-                  <span className="truncate">{isToday ? 'Entrenamiento de Hoy' : formatFullDisplayDate(session.date)}</span>
+                  <span className="truncate text-center">{isToday ? 'Entrenamiento de Hoy' : formatFullDisplayDate(session.date)}</span>
                 </h2>
-                <div className="flex items-center gap-1">
+                <div className="absolute top-1/2 -translate-y-1/2 right-4 flex items-center gap-1">
                   <button onClick={() => setExportOptions({ title: `Exportar Sesión`, onExportJson: () => downloadJSON({ summaryLogs: session.logs }, `sesion-${session.date}.json`), onExportText: () => downloadTXT(generateSessionText(session.logs, session.date, session.totalCalories), `sesion-${session.date}.txt`) })} className="p-2 text-gray-400 hover:text-cyan-500 hover:bg-cyan-500/10 rounded-full transition-colors" aria-label={`Exportar sesión`}><Save className="w-5 h-5" /></button>
                   <button onClick={() => setDeletionTarget({ type: 'session', id: session.date, name: `la sesión del ${formatFullDisplayDate(session.date)}`, sessionLogs: session.logs })} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-full transition-colors" aria-label={`Eliminar sesión`}><Trash2 className="w-5 h-5" /></button>
                 </div>

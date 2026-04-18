@@ -180,10 +180,18 @@ const ConsejosPage: React.FC = () => {
       try {
         const text = await navigator.clipboard.readText();
         if (text.trim()) {
+            const linkUrl = text.trim();
             const currentLinks = formData.videoLinks || [];
-            if (currentLinks.some(l => l.url === text.trim())) return;
-            const newLink: LinkItem = { id: crypto.randomUUID(), url: text.trim(), name: `Video ${currentLinks.length + 1}` };
+            if (currentLinks.some(l => l.url === linkUrl)) {
+              // Even if already exists, open it as per user request "cuando lo pegue lo abra"
+              window.open(linkUrl, '_blank', 'noopener,noreferrer');
+              return;
+            }
+            const newLink: LinkItem = { id: crypto.randomUUID(), url: linkUrl, name: `Video ${currentLinks.length + 1}` };
             setFormData(prev => ({ ...prev, videoLinks: [...currentLinks, newLink] }));
+            
+            // Open the link immediately after pasting
+            window.open(linkUrl, '_blank', 'noopener,noreferrer');
         }
       } catch (err) {
         console.error('Failed to read clipboard contents: ', err);
@@ -234,15 +242,27 @@ const ConsejosPage: React.FC = () => {
                             
                             <div>
                               <h3 className="text-sm font-semibold text-gray-400 mb-2">Links de Video</h3>
-                               <div className="flex flex-wrap gap-2">
+                               <div className="flex flex-col gap-2">
                                   {(formData.videoLinks || []).map((link, index) => (
-                                      <div key={link.id} className="relative group bg-cyan-600 text-white font-semibold text-sm py-1 px-3 rounded-full flex items-center gap-2">
-                                          <span>{link.name}</span>
-                                          <button onClick={() => setFormData({...formData, videoLinks: (formData.videoLinks || []).filter(l => l.id !== link.id)})} className="text-white/70 hover:text-white"><X className="w-4 h-4" /></button>
+                                      <div key={link.id} className="relative group w-full bg-cyan-600 text-white font-semibold text-sm rounded-lg flex items-center overflow-hidden">
+                                          <button 
+                                            onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')}
+                                            className="flex-grow py-2 px-4 text-left truncate hover:bg-white/10 transition-colors"
+                                            title="Abrir link"
+                                          >
+                                            {link.name}
+                                          </button>
+                                          <button 
+                                            onClick={() => setFormData({...formData, videoLinks: (formData.videoLinks || []).filter(l => l.id !== link.id)})} 
+                                            className="px-3 py-2 text-white/70 hover:text-white hover:bg-red-500 transition-colors"
+                                            title="Eliminar link"
+                                          >
+                                            <X className="w-5 h-5" />
+                                          </button>
                                       </div>
                                   ))}
-                                  <button onClick={handlePasteVideoLinkInModal} className="bg-gray-700/50 border-2 border-dashed border-gray-600 rounded-full flex items-center justify-center text-gray-400 hover:text-orange-400 hover:border-orange-500 transition-colors py-1 px-3 gap-2 text-sm">
-                                      <ClipboardPaste className="w-4 h-4"/> Pegar
+                                  <button onClick={handlePasteVideoLinkInModal} className="w-full bg-gray-700/50 border-2 border-dashed border-gray-600 rounded-lg flex items-center justify-center text-gray-400 hover:text-orange-400 hover:border-orange-500 transition-colors py-3 px-3 gap-2 text-base font-semibold">
+                                      <ClipboardPaste className="w-5 h-5"/> Pegar Link
                                   </button>
                               </div>
                             </div>

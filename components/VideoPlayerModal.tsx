@@ -84,9 +84,13 @@ const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({ isOpen, onClose, vi
           aspectRatioClass = 'aspect-[9/16]';
       }
       info = { type: 'youtube', embedUrl: youtubeUrl, modalClass, aspectRatioClass };
+      setVideoInfo(info);
+    } else {
+      // For any other link (not YouTube, and not specifically filtered like IG/TikTok), 
+      // just open it in a new tab as requested by the user.
+      window.open(videoUrl, '_blank', 'noopener,noreferrer');
+      onClose();
     }
-    
-    setVideoInfo(info);
   }, [isOpen, videoUrl, onClose]);
 
 

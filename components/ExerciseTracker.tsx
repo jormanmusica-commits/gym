@@ -641,8 +641,8 @@ const DailyLogCard: React.FC<DailyLogCardProps> = ({
             {/* HEADER */}
             <div className="p-3 sm:p-4 cursor-pointer" onClick={onToggleExpand}>
                 <div className="flex justify-between items-start gap-4">
-                    <div className="flex-grow min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
+                    <div className="flex-grow min-w-0 flex flex-col items-center text-center">
+                        <div className="flex items-center justify-center flex-wrap gap-2 mb-1">
                             <div className="flex items-center gap-1.5 text-xs text-white min-w-0">
                                 <CalendarDays className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
                                 <span className="truncate">{formatFullDisplayDate(log.date)}</span>
@@ -652,7 +652,7 @@ const DailyLogCard: React.FC<DailyLogCardProps> = ({
                                 {log.sede}
                             </span>
                         </div>
-                        <p className="font-bold text-white truncate text-lg">{log.exerciseName || 'Sin nombre'}</p>
+                        <p className="font-bold text-white truncate text-lg w-full">{log.exerciseName || 'Sin nombre'}</p>
                     </div>
                     <div className="flex-shrink-0 flex items-center gap-1 sm:gap-2">
                         <span className="p-1 text-cyan-400" aria-label={isExpanded ? 'Ocultar detalles' : 'Mostrar detalles'}>

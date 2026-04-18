@@ -420,11 +420,11 @@ const DailySummaryModal: React.FC<{ date: string | null; onClose: () => void; on
             />
             <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 animate-fadeIn" onClick={onClose}>
                 <div className="bg-gray-800/80 backdrop-blur-xl border border-white/10 rounded-lg shadow-xl p-6 w-full max-w-2xl m-4 animate-scaleIn flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
-                    <div className="flex justify-between items-center mb-4 flex-shrink-0">
-                        <button onClick={() => setIsCalendarOpen(true)} className="text-xl font-bold text-cyan-400 capitalize hover:text-cyan-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-500/70 rounded-md px-2 py-1 -ml-2">
+                    <div className="relative flex justify-center items-center mb-6 flex-shrink-0">
+                        <button onClick={() => setIsCalendarOpen(true)} className="text-xl font-bold text-cyan-400 capitalize hover:text-cyan-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-500/70 rounded-md px-2 py-1 text-center">
                             {formatDisplayDate(date)}
                         </button>
-                        <button onClick={onClose} className="p-2 text-gray-400 hover:text-white transition" aria-label="Cerrar">
+                        <button onClick={onClose} className="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-white transition" aria-label="Cerrar">
                             <X className="w-6 h-6" />
                         </button>
                     </div>

@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { BarChart4, History, Weight, Repeat, MapPin, NotebookText, Clock, Flame, Zap, Gauge, TrendingUp, Award, ArrowUp, ArrowDown, Trophy } from 'lucide-react';
+import { BarChart4, History, Weight, Repeat, MapPin, NotebookText, Clock, Flame, Zap, Gauge, TrendingUp, Award, ArrowUp, ArrowDown, Trophy, CalendarDays } from 'lucide-react';
 import type { ExerciseLog } from '../types';
 
 import { parseCustomDate, parseMetric, formatFullDisplayDate } from '../lib/metrics';
@@ -142,19 +142,20 @@ const Welcome: React.FC<WelcomePageProps> = ({ setActiveTab }) => {
                         </h2>
                         {lastLog ? (
                             <div className="bg-black/20 rounded-xl border border-white/10 p-4 sm:p-6 text-left animate-zoomInPop">
-                                <div className="flex justify-between items-start gap-4 mb-4">
-                                    <div>
-                                        <p className="text-lg font-bold text-white">{lastLog.exerciseName}</p>
-                                        <div className="flex items-center flex-wrap gap-2 mt-1">
-                                            <p className="text-sm text-gray-400">{formatFullDisplayDate(lastLog.date)}</p>
-                                            <span className={`${getSedeColor(lastLog.sede)} text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1`}>
-                                                <MapPin className="w-3 h-3"/>
-                                                {lastLog.sede}
-                                            </span>
-                                        </div>
-                                    </div>
+                                <div className="flex flex-col items-center text-center mb-4">
+                                    <p className="text-xl font-bold text-white mb-1 uppercase tracking-tight">{lastLog.exerciseName}</p>
+                                    <span className={`${getSedeColor(lastLog.sede)} text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 mt-1`}>
+                                        <MapPin className="w-3.5 h-3.5"/>
+                                        {lastLog.sede}
+                                    </span>
                                 </div>
                                 <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm pt-4 border-t border-gray-700/50">
+                                    <div className="col-span-2 flex justify-center mb-1">
+                                        <div className="flex items-center gap-2 bg-white/5 px-4 py-1.5 rounded-full border border-white/5">
+                                            <CalendarDays className="w-4 h-4 text-cyan-400" />
+                                            <span className="text-gray-300 font-semibold">{formatFullDisplayDate(lastLog.date)}</span>
+                                        </div>
+                                    </div>
                                     <MetricItem label="Tiempo" value={lastLog.tiempo} unit="Min" Icon={Clock} comparison={comparison.tiempo} />
                                     <MetricItem label={isNadaTab ? 'Velocidad' : 'Series'} value={lastLog.series} unit={isNadaTab ? 'Km/h' : ''} Icon={isNadaTab ? Zap : BarChart4} comparison={comparison.series} />
                                     <MetricItem label={isNadaTab ? 'Distancia' : 'Reps'} value={lastLog.reps} unit={isNadaTab && lastLog.distanceUnit ? (lastLog.distanceUnit === 'KM' ? 'Km' : 'm') : ''} Icon={isNadaTab ? Gauge : Repeat} comparison={comparison.reps} />
