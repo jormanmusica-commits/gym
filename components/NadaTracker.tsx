@@ -229,7 +229,7 @@ const TimePickerModal: React.FC<{ initialValue: string; onSave: (value: string) 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[110] animate-fadeIn" onClick={onClose}>
             <div className="bg-gray-800/80 backdrop-blur-xl border border-white/10 rounded-lg shadow-xl p-6 w-full max-w-md m-4 animate-scaleIn text-center" onClick={e => e.stopPropagation()}>
-                <h3 className="text-xl font-bold text-cyan-400 mb-6">Seleccionar Tiempo</h3>
+                <h3 className="text-lg font-bold text-cyan-400 mb-6">Seleccionar Tiempo</h3>
                 
                 <div className="flex items-start justify-center gap-1 my-6">
                     <TimeStepper value={hours} setValue={setHours} min={0} max={99} label="Horas" />
@@ -383,7 +383,7 @@ const NadaTracker: React.FC<{ dayName: string; }> = ({ dayName }) => {
           ) : (
             <div className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <input type="text" name="title" value={title || ''} onChange={handleInputChange} placeholder="Actividad (ej. Cinta, Elíptica)" className="w-full text-lg font-bold text-cyan-400 bg-gray-700/50 border border-gray-600 rounded-md py-2 px-3 transition placeholder:text-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-500/70 focus:border-transparent"/>
+                  <input type="text" name="title" value={title || ''} onChange={handleInputChange} placeholder="Actividad (ej. Cinta, Elíptica)" className="w-full text-base font-bold text-cyan-400 bg-gray-700/50 border border-gray-600 rounded-md py-2 px-3 transition placeholder:text-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-500/70 focus:border-transparent"/>
                   <button onClick={() => setIsCalendarOpen(true)} className="bg-gray-700 border border-gray-600 rounded-md p-2 transition text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/70"><CalendarDays className="w-5 h-5"/></button>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

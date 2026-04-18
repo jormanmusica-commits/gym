@@ -90,7 +90,7 @@ const MetricDisplay: React.FC<{
     }
     
     const iconSize = size === 'large' ? 'w-8 h-8' : 'w-5 h-5';
-    const textSize = size === 'large' ? 'text-xl' : 'text-base';
+    const textSize = size === 'large' ? 'text-lg' : 'text-sm';
     const labelSize = size === 'large' ? 'text-sm' : 'text-xs';
 
     return (

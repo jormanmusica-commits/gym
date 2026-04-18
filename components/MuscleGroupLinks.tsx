@@ -152,7 +152,7 @@ const MuscleGroupModal: React.FC<MuscleGroupModalProps> = ({ isOpen, onClose, da
           onClick={(e) => e.stopPropagation()}
         >
           <div className="relative flex justify-center items-center mb-6">
-            <h3 id="muscle-group-modal-title" className="text-xl font-bold text-cyan-400 flex items-center gap-2 uppercase">
+            <h3 id="muscle-group-modal-title" className="text-lg font-bold text-cyan-400 flex items-center gap-2 uppercase">
               <Icon className="w-6 h-6" />
               {config.title}
             </h3>
@@ -189,7 +189,7 @@ const MuscleGroupLinks: React.FC<MuscleGroupLinksProps> = ({ dayName }) => {
   if (isCardioDay) {
     return (
       <div className="bg-gray-900/60 backdrop-blur-md border border-white/10 rounded-2xl p-2">
-        <h3 className="text-2xl font-extrabold text-cyan-400 flex items-center justify-center gap-3 uppercase p-2 tracking-wider">
+        <h3 className="text-xl font-extrabold text-cyan-400 flex items-center justify-center gap-3 uppercase p-2 tracking-wider">
             <Icon className="w-7 h-7" />
             {config.title}
         </h3>

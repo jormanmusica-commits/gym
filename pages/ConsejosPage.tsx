@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { Lightbulb, Plus, Trash2, Camera, X, Pencil, Check, ChevronLeft, ChevronRight, ClipboardPaste } from 'lucide-react';
+import { Lightbulb, Plus, Trash2, Camera, X, Pencil, Check, ChevronLeft, ChevronRight, ClipboardPaste, Shirt, Footprints, Shield, Hand, HeartPulse, Video } from 'lucide-react';
 import type { ConsejoItem, ExerciseMedia, LinkItem } from '../types';
 import ConfirmationModal from '../components/ConfirmationModal';
 import VideoPlayerModal from '../components/VideoPlayerModal';
@@ -93,8 +93,20 @@ const createInitialConsejoData = (): Omit<ConsejoItem, 'id' | 'createdAt'> => ({
     videoLinks: [],
 });
 
+const dayConfig: { [key: string]: { title: string; groups: string[]; icon: React.ElementType } } = {
+    'Día 1': { title: 'Pecho y Bíceps', groups: ['Pecho', 'Bíceps'], icon: Shirt },
+    'Día 2': { title: 'Pierna y Glúteo', groups: ['Pierna', 'Glúteo'], icon: Footprints },
+    'Día 3': { title: 'Hombro y Espalda', groups: ['Hombro', 'Espalda'], icon: Shield },
+    'Día 4': { title: 'Tríceps y Antebrazo', groups: ['Tríceps', 'Antebrazo'], icon: Hand },
+    'Día 5': { title: 'Combinados', groups: ['General'], icon: HeartPulse },
+};
+
 const ConsejosPage: React.FC = () => {
-    const { consejos, addConsejo, updateConsejo, removeConsejo, removeConsejoMedia, addConsejoVideoLink, removeConsejoVideoLink, updateConsejoVideoLinkName } = useAppContext();
+    const { 
+        consejos, addConsejo, updateConsejo, removeConsejo, removeConsejoMedia, 
+        addConsejoVideoLink, removeConsejoVideoLink, updateConsejoVideoLinkName,
+        muscleGroupLinks, stretchingLinks, postureLinks
+    } = useAppContext();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingConsejo, setEditingConsejo] = useState<ConsejoItem | null>(null);
     const [consejoToDelete, setConsejoToDelete] = useState<ConsejoItem | null>(null);
@@ -288,83 +300,200 @@ const ConsejosPage: React.FC = () => {
             )}
             
             {/* Main Content */}
-            <div className="bg-gray-900/60 backdrop-blur-md border border-white/10 rounded-2xl p-4 sm:p-6">
-                <h1 className="text-2xl font-extrabold text-cyan-400 flex items-center justify-center gap-3 uppercase tracking-wider mb-6">
-                    <Lightbulb className="w-7 h-7" />
-                    Consejos
-                </h1>
-                
-                <div className="space-y-4">
-                    {consejos.length === 0 ? (
-                         <div className="text-center p-8 border-2 border-dashed border-gray-600/50 rounded-lg animate-fadeIn">
-                            <Lightbulb className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-                            <h3 className="text-lg font-semibold text-white">Tu bloc de notas personal</h3>
-                            <p className="text-gray-400 mt-1">Añade tus primeros consejos, notas o recordatorios usando el botón `+`.</p>
-                         </div>
-                    ) : (
-                        consejos.map((consejo, index) => (
-                            <div key={consejo.id} style={{ animationDelay: `${index * 50}ms` }} className="bg-black/20 rounded-xl border border-white/10 p-4 animate-zoomInPop opacity-0">
-                                <div className="flex justify-between items-start gap-4">
-                                    <h3 className="font-bold text-lg text-white">{consejo.title || "Nota sin título"}</h3>
-                                    <div className="flex-shrink-0 flex items-center gap-1">
-                                        <button onClick={() => handleOpenModal(consejo)} className="p-2 text-gray-400 hover:text-cyan-400 transition rounded-full hover:bg-cyan-500/10" aria-label="Editar consejo"><Pencil className="w-5 h-5"/></button>
-                                        <button onClick={() => setConsejoToDelete(consejo)} className="p-2 text-gray-400 hover:text-red-500 transition rounded-full hover:bg-red-500/10" aria-label="Eliminar consejo"><Trash2 className="w-5 h-5" /></button>
+            <div className="space-y-6">
+                <div className="bg-gray-900/60 backdrop-blur-md border border-white/10 rounded-2xl p-4 sm:p-6">
+                    <h1 className="text-xl font-extrabold text-cyan-400 flex items-center justify-center gap-3 uppercase tracking-wider mb-6">
+                        <Lightbulb className="w-7 h-7" />
+                        Consejos y Notas
+                    </h1>
+                    
+                    <div className="space-y-4">
+                        {consejos.length === 0 ? (
+                             <div className="text-center p-8 border-2 border-dashed border-gray-600/50 rounded-lg animate-fadeIn">
+                                <Lightbulb className="w-12 h-12 text-gray-500 mx-auto mb-4" />
+                                <h3 className="text-lg font-semibold text-white">Tu bloc de notas personal</h3>
+                                <p className="text-gray-400 mt-1">Añade tus primeros consejos, notas o recordatorios usando el botón `+`.</p>
+                             </div>
+                        ) : (
+                            consejos.map((consejo, index) => (
+                                <div key={consejo.id} style={{ animationDelay: `${index * 50}ms` }} className="bg-black/20 rounded-xl border border-white/10 p-4 animate-zoomInPop opacity-0">
+                                    <div className="flex justify-between items-start gap-4">
+                                        <h3 className="font-bold text-lg text-white">{consejo.title || "Nota sin título"}</h3>
+                                        <div className="flex-shrink-0 flex items-center gap-1">
+                                            <button onClick={() => handleOpenModal(consejo)} className="p-2 text-gray-400 hover:text-cyan-400 transition rounded-full hover:bg-cyan-500/10" aria-label="Editar consejo"><Pencil className="w-5 h-5"/></button>
+                                            <button onClick={() => setConsejoToDelete(consejo)} className="p-2 text-gray-400 hover:text-red-500 transition rounded-full hover:bg-red-500/10" aria-label="Eliminar consejo"><Trash2 className="w-5 h-5" /></button>
+                                        </div>
+                                    </div>
+                                    {consejo.content && <p className="text-gray-300 mt-2 whitespace-pre-wrap">{consejo.content}</p>}
+                                    {consejo.media.length > 0 && (
+                                        <div className="flex flex-wrap gap-2 mt-4">
+                                            {consejo.media.map((mediaItem, index) => (
+                                                <button key={index} onClick={() => setLightboxMedia({ allMedia: consejo.media, startIndex: index, consejoId: consejo.id})} className="relative w-24 h-24 group rounded-lg overflow-hidden">
+                                                    {mediaItem.type === 'image' ? (
+                                                        <img src={mediaItem.dataUrl} alt={`Media ${index + 1}`} className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105" />
+                                                    ) : (
+                                                        <video src={mediaItem.dataUrl} muted loop playsInline className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105" />
+                                                    )}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {(consejo.videoLinks || []).length > 0 && (
+                                      <div className="mt-4 pt-4 border-t border-gray-700/50">
+                                          <h4 className="text-sm font-semibold text-gray-400 mb-2">Videos de Referencia</h4>
+                                          <ul className="space-y-2">
+                                            {(consejo.videoLinks || []).map(link => (
+                                              <li key={link.id} className="bg-gray-700/50 rounded-md">
+                                                {editingLink?.linkId === link.id ? (
+                                                  <div className="flex items-center p-2 gap-2">
+                                                    <input
+                                                      type="text"
+                                                      value={editingLink.name}
+                                                      onChange={(e) => setEditingLink({ ...editingLink, name: e.target.value })}
+                                                      onKeyDown={(e) => e.key === 'Enter' && handleSaveLinkName()}
+                                                      onBlur={handleSaveLinkName}
+                                                      className="flex-grow bg-gray-600 text-white font-bold py-2 px-4 rounded-md focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                                                      autoFocus
+                                                    />
+                                                    <button onClick={handleSaveLinkName} className="text-green-400 hover:text-green-300 p-1"><Check className="w-5 h-5"/></button>
+                                                    <button onClick={() => setEditingLink(null)} className="text-gray-400 hover:text-white p-1"><X className="w-5 h-5"/></button>
+                                                  </div>
+                                                ) : (
+                                                  <div className="relative group">
+                                                    <button
+                                                      onClick={() => setSelectedVideoUrl(link.url)}
+                                                      className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:brightness-110 text-white font-bold py-2 px-4 rounded-md transition-all duration-300 text-center truncate"
+                                                    >
+                                                      {link.name}
+                                                    </button>
+                                                    <button onClick={(e) => { e.stopPropagation(); setEditingLink({ consejoId: consejo.id, linkId: link.id, name: link.name })}} className="absolute top-1/2 -translate-y-1/2 left-2 text-white hover:text-cyan-400 transition p-1.5 bg-black/40 rounded-full opacity-0 group-hover:opacity-100" aria-label={`Editar nombre de ${link.name}`}><Pencil className="w-4 h-4" /></button>
+                                                    <button onClick={(e) => { e.stopPropagation(); setLinkToDelete({ consejoId: consejo.id, linkId: link.id, name: link.name }) }} className="absolute top-1/2 -translate-y-1/2 right-2 text-white hover:text-red-500 transition p-1.5 bg-black/40 rounded-full opacity-0 group-hover:opacity-100" aria-label={`Eliminar ${link.name}`}><Trash2 className="w-4 h-4" /></button>
+                                                  </div>
+                                                )}
+                                              </li>
+                                            ))}
+                                          </ul>
+                                      </div>
+                                    )}
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+
+                {/* Video Library Section */}
+                <div className="bg-gray-900/60 backdrop-blur-md border border-white/10 rounded-2xl p-4 sm:p-6">
+                    <h2 className="text-xl font-extrabold text-cyan-400 flex items-center justify-center gap-3 uppercase tracking-wider mb-6">
+                        <Video className="w-7 h-7" />
+                        Biblioteca de Videos
+                    </h2>
+
+                    <div className="space-y-6">
+                        {Object.entries(dayConfig).map(([dayKey, config]) => {
+                            const muscleLinks = muscleGroupLinks[dayKey] || {};
+                            const hasLinks = Object.values(muscleLinks).some(links => links.length > 0);
+                            
+                            if (!hasLinks) return null;
+
+                            const Icon = config.icon;
+
+                            return (
+                                <div key={dayKey} className="bg-black/20 rounded-xl border border-white/10 p-4">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="p-2 bg-cyan-500/10 rounded-lg">
+                                            <Icon className="w-6 h-6 text-cyan-400" />
+                                        </div>
+                                        <h3 className="font-bold text-lg text-white uppercase tracking-tight">{config.title}</h3>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        {Object.entries(muscleLinks).map(([muscleName, links]) => {
+                                            if (links.length === 0) return null;
+
+                                            return (
+                                                <div key={muscleName} className="bg-gray-800/40 p-3 rounded-lg border border-white/5">
+                                                    <h4 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-widest">{muscleName}</h4>
+                                                    <ul className="space-y-2">
+                                                        {links.map((link) => (
+                                                            <li key={link.id}>
+                                                                <button
+                                                                    onClick={() => setSelectedVideoUrl(link.url)}
+                                                                    className="w-full bg-cyan-600/20 hover:bg-cyan-600/40 text-cyan-300 text-sm font-semibold py-2 px-3 rounded-md border border-cyan-500/30 transition-all duration-300 text-left truncate flex items-center justify-between group"
+                                                                >
+                                                                    <span>{link.name}</span>
+                                                                    <Video className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" />
+                                                                </button>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
-                                {consejo.content && <p className="text-gray-300 mt-2 whitespace-pre-wrap">{consejo.content}</p>}
-                                {consejo.media.length > 0 && (
-                                    <div className="flex flex-wrap gap-2 mt-4">
-                                        {consejo.media.map((mediaItem, index) => (
-                                            <button key={index} onClick={() => setLightboxMedia({ allMedia: consejo.media, startIndex: index, consejoId: consejo.id})} className="relative w-24 h-24 group rounded-lg overflow-hidden">
-                                                {mediaItem.type === 'image' ? (
-                                                    <img src={mediaItem.dataUrl} alt={`Media ${index + 1}`} className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105" />
-                                                ) : (
-                                                    <video src={mediaItem.dataUrl} muted loop playsInline className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105" />
-                                                )}
-                                            </button>
-                                        ))}
+                            );
+                        })}
+
+                        {/* If no videos at all */}
+                        {(!Object.entries(dayConfig).some(([dayKey]) => {
+                             const muscleLinks = muscleGroupLinks[dayKey] || {};
+                             return Object.values(muscleLinks).some(links => links.length > 0);
+                        }) && stretchingLinks.length === 0 && postureLinks.length === 0) && (
+                            <div className="text-center p-8 border-2 border-dashed border-gray-600/50 rounded-lg">
+                                <Video className="w-12 h-12 text-gray-500 mx-auto mb-4" />
+                                <h3 className="text-base font-semibold text-gray-300">No hay videos guardados</h3>
+                                <p className="text-sm text-gray-500 mt-1">Los videos que pegues en tus rutinas aparecerán aquí automáticamente.</p>
+                            </div>
+                        )}
+
+                        {/* Stretching and Posture Section */}
+                        {(stretchingLinks.length > 0 || postureLinks.length > 0) && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6 pt-6 border-t border-white/10">
+                                {stretchingLinks.length > 0 && (
+                                    <div className="bg-black/20 rounded-xl border border-white/10 p-4">
+                                        <h3 className="font-bold text-lg text-white mb-4 uppercase tracking-tight flex items-center gap-2">
+                                            <Video className="w-5 h-5 text-green-400" />
+                                            Estiramientos
+                                        </h3>
+                                        <ul className="space-y-2">
+                                            {stretchingLinks.map(link => (
+                                                <li key={link.id}>
+                                                    <button
+                                                        onClick={() => setSelectedVideoUrl(link.url)}
+                                                        className="w-full bg-green-600/10 hover:bg-green-600/20 text-green-300 text-sm font-semibold py-2 px-3 rounded-md border border-green-500/20 transition-all duration-300 text-left truncate flex items-center justify-between group"
+                                                    >
+                                                        <span>{link.name}</span>
+                                                        <Video className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" />
+                                                    </button>
+                                                </li>
+                                            ))}
+                                        </ul>
                                     </div>
                                 )}
-                                {(consejo.videoLinks || []).length > 0 && (
-                                  <div className="mt-4 pt-4 border-t border-gray-700/50">
-                                      <h4 className="text-sm font-semibold text-gray-400 mb-2">Videos de Referencia</h4>
-                                      <ul className="space-y-2">
-                                        {(consejo.videoLinks || []).map(link => (
-                                          <li key={link.id} className="bg-gray-700/50 rounded-md">
-                                            {editingLink?.linkId === link.id ? (
-                                              <div className="flex items-center p-2 gap-2">
-                                                <input
-                                                  type="text"
-                                                  value={editingLink.name}
-                                                  onChange={(e) => setEditingLink({ ...editingLink, name: e.target.value })}
-                                                  onKeyDown={(e) => e.key === 'Enter' && handleSaveLinkName()}
-                                                  onBlur={handleSaveLinkName}
-                                                  className="flex-grow bg-gray-600 text-white font-bold py-2 px-4 rounded-md focus:ring-2 focus:ring-cyan-500 focus:outline-none"
-                                                  autoFocus
-                                                />
-                                                <button onClick={handleSaveLinkName} className="text-green-400 hover:text-green-300 p-1"><Check className="w-5 h-5"/></button>
-                                                <button onClick={() => setEditingLink(null)} className="text-gray-400 hover:text-white p-1"><X className="w-5 h-5"/></button>
-                                              </div>
-                                            ) : (
-                                              <div className="relative group">
-                                                <button
-                                                  onClick={() => setSelectedVideoUrl(link.url)}
-                                                  className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:brightness-110 text-white font-bold py-2 px-4 rounded-md transition-all duration-300 text-center truncate"
-                                                >
-                                                  {link.name}
-                                                </button>
-                                                <button onClick={(e) => { e.stopPropagation(); setEditingLink({ consejoId: consejo.id, linkId: link.id, name: link.name })}} className="absolute top-1/2 -translate-y-1/2 left-2 text-white hover:text-cyan-400 transition p-1.5 bg-black/40 rounded-full opacity-0 group-hover:opacity-100" aria-label={`Editar nombre de ${link.name}`}><Pencil className="w-4 h-4" /></button>
-                                                <button onClick={(e) => { e.stopPropagation(); setLinkToDelete({ consejoId: consejo.id, linkId: link.id, name: link.name }) }} className="absolute top-1/2 -translate-y-1/2 right-2 text-white hover:text-red-500 transition p-1.5 bg-black/40 rounded-full opacity-0 group-hover:opacity-100" aria-label={`Eliminar ${link.name}`}><Trash2 className="w-4 h-4" /></button>
-                                              </div>
-                                            )}
-                                          </li>
-                                        ))}
-                                      </ul>
-                                  </div>
+                                {postureLinks.length > 0 && (
+                                    <div className="bg-black/20 rounded-xl border border-white/10 p-4">
+                                        <h3 className="font-bold text-lg text-white mb-4 uppercase tracking-tight flex items-center gap-2">
+                                            <Video className="w-5 h-5 text-purple-400" />
+                                            Posturas
+                                        </h3>
+                                        <ul className="space-y-2">
+                                            {postureLinks.map(link => (
+                                                <li key={link.id}>
+                                                    <button
+                                                        onClick={() => setSelectedVideoUrl(link.url)}
+                                                        className="w-full bg-purple-600/10 hover:bg-purple-600/20 text-purple-300 text-sm font-semibold py-2 px-3 rounded-md border border-purple-500/20 transition-all duration-300 text-left truncate flex items-center justify-between group"
+                                                    >
+                                                        <span>{link.name}</span>
+                                                        <Video className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" />
+                                                    </button>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
                                 )}
                             </div>
-                        ))
-                    )}
+                        )}
+                    </div>
                 </div>
             </div>
 

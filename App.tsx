@@ -623,7 +623,7 @@ const AppContent: React.FC = () => {
   };
 
   const getSidebarButtonClasses = (tabName: string) => {
-    return `w-full text-left py-3 px-4 font-semibold text-lg transition-all duration-300 focus:outline-none rounded-lg flex items-center gap-4 transform hover:-translate-y-0.5 ${
+    return `w-full text-left py-3 px-4 font-semibold text-base transition-all duration-300 focus:outline-none rounded-lg flex items-center gap-4 transform hover:-translate-y-0.5 ${
       activeTab === tabName
         ? 'bg-cyan-500/80 text-white shadow-lg shadow-cyan-500/20'
         : 'text-gray-300 hover:bg-white/10 hover:text-white'
@@ -694,7 +694,7 @@ const AppContent: React.FC = () => {
                 >
                   <Home className="w-8 h-8 text-cyan-400 flex-shrink-0" />
                   <div>
-                    <span className={`block text-2xl font-extrabold ${activeTab !== 'Bienvenida' && 'bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400'}`}>
+                    <span className={`block text-xl font-extrabold ${activeTab !== 'Bienvenida' && 'bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400'}`}>
                       Bienvenida
                     </span>
                     {activeSede && (

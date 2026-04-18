@@ -442,7 +442,7 @@ const ExerciseLogModal: React.FC<ExerciseLogModalProps> = ({ isOpen, onClose, on
                 <div className="bg-gray-800/80 backdrop-blur-xl border border-white/10 rounded-lg shadow-xl p-6 w-full max-w-lg m-4 animate-scaleIn flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
                     <div className="flex justify-between items-center mb-4 flex-shrink-0">
                         <div className="w-10 h-10 md:hidden" /> {/* Spacer for centered header on mobile */}
-                        <h2 className="text-xl font-bold text-cyan-400 text-center flex-grow uppercase tracking-widest px-4 break-words">
+                        <h2 className="text-lg font-bold text-cyan-400 text-center flex-grow uppercase tracking-widest px-4 break-words">
                             {initialData ? (initialData.exerciseName || formData.exerciseName) : 'Añadir Ejercicio'}
                         </h2>
                         <button onClick={onClose} className="p-2 text-gray-400 hover:text-white transition" aria-label="Cerrar"><X className="w-6 h-6" /></button>
@@ -451,15 +451,15 @@ const ExerciseLogModal: React.FC<ExerciseLogModalProps> = ({ isOpen, onClose, on
                     <div className="overflow-y-auto pr-2 space-y-4 no-scrollbar">
                         {!initialData && (
                             <div className="relative" ref={suggestionBoxRef}>
-                                <input
-                                    type="text"
-                                    value={formData.exerciseName}
-                                    onChange={(e) => handleInputChange('exerciseName', e.target.value)}
-                                    onFocus={handleNameInputFocus}
-                                    placeholder="NOMBRE DEL EJERCICIO"
-                                    className="w-full text-xl font-extrabold text-cyan-400 bg-gray-700/50 border border-gray-600 rounded-md py-2 px-3 transition placeholder:text-cyan-400/50 tracking-wider focus:outline-none focus:ring-2 focus:ring-cyan-500/70 focus:border-transparent"
-                                    autoComplete="off"
-                                />
+                                    <input
+                                        type="text"
+                                        value={formData.exerciseName}
+                                        onChange={(e) => handleInputChange('exerciseName', e.target.value)}
+                                        onFocus={handleNameInputFocus}
+                                        placeholder="NOMBRE DEL EJERCICIO"
+                                        className="w-full text-lg font-extrabold text-cyan-400 bg-gray-700/50 border border-gray-600 rounded-md py-2 px-3 transition placeholder:text-cyan-400/50 tracking-wider focus:outline-none focus:ring-2 focus:ring-cyan-500/70 focus:border-transparent"
+                                        autoComplete="off"
+                                    />
                                 {isSuggestionsVisible && suggestions.length > 0 && (
                                     <ul className="absolute z-10 w-full bg-gray-700 border border-gray-600 rounded-md mt-1 max-h-48 overflow-y-auto custom-scrollbar">
                                         {suggestions.map(suggestion => (
@@ -504,7 +504,7 @@ const ExerciseLogModal: React.FC<ExerciseLogModalProps> = ({ isOpen, onClose, on
                                     </label>
                                     <button
                                         onClick={() => setIsCalendarOpen(true)}
-                                        className={`${inputClasses} text-left flex items-center justify-between text-lg font-bold text-white uppercase tracking-tight`}
+                                        className={`${inputClasses} text-left flex items-center justify-between text-base font-bold text-white uppercase tracking-tight`}
                                     >
                                         <span>{formatDateForButton(formData.date)}</span>
                                         <CalendarDays className="w-5 h-5 text-cyan-400" />
@@ -560,7 +560,7 @@ const ExerciseLogModal: React.FC<ExerciseLogModalProps> = ({ isOpen, onClose, on
                                     </label>
                                     <button
                                         onClick={() => setIsCalendarOpen(true)}
-                                        className={`${inputClasses} text-left flex items-center justify-between text-lg font-bold text-white uppercase tracking-tight`}
+                                        className={`${inputClasses} text-left flex items-center justify-between text-base font-bold text-white uppercase tracking-tight`}
                                     >
                                         <span>{formatDateForButton(formData.date)}</span>
                                         <CalendarDays className="w-5 h-5 text-cyan-400" />

@@ -84,10 +84,10 @@ const MyExercises: React.FC<MyExercisesProps> = ({ onSedeSelected }) => {
         <div className="mb-6 flex justify-center">
            <Activity className="w-24 h-24 text-cyan-400 animate-pulse-slow" />
         </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400 tracking-tight">
+        <h1 className="text-xl sm:text-2xl font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400 tracking-tight">
           Tu Progreso Empieza Aquí
         </h1>
-        <p className="text-gray-300 text-base sm:text-lg max-w-md mx-auto mb-8">
+        <p className="text-gray-300 text-sm sm:text-base max-w-md mx-auto mb-8">
           Elige tu sede para empezar tu entrenamiento
         </p>
         <div className="flex flex-col items-center justify-center gap-4">

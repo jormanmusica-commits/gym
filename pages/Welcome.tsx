@@ -130,20 +130,20 @@ const Welcome: React.FC<WelcomePageProps> = ({ setActiveTab }) => {
     return (
         <div className="flex flex-col items-center justify-center text-center animate-fadeInUp min-h-[calc(100vh-150px)] p-2 sm:p-4">
             <div className="bg-gray-900/60 backdrop-blur-md border border-white/10 rounded-2xl p-6 sm:p-8 shadow-2xl shadow-cyan-500/10 w-full max-w-3xl">
-                <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-gray-200 tracking-tight">
+                <h1 className="text-xl sm:text-2xl font-bold mb-6 text-gray-200 tracking-tight">
                     "La disciplina es el puente entre metas y logros. <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400">¡Vamos con todo!</span>"
                 </h1>
                 
                 <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                      {/* Last Log */}
                      <div className="w-full">
-                        <h2 className="text-xl font-extrabold text-cyan-400 mb-4 uppercase tracking-wider flex items-center justify-center gap-2">
-                            <History className="w-6 h-6"/> Tu Último Registro
+                        <h2 className="text-lg font-extrabold text-cyan-400 mb-4 uppercase tracking-wider flex items-center justify-center gap-2">
+                            <History className="w-5 h-5"/> Tu Último Registro
                         </h2>
                         {lastLog ? (
                             <div className="bg-black/20 rounded-xl border border-white/10 p-4 sm:p-6 text-left animate-zoomInPop">
                                 <div className="flex flex-col items-center text-center mb-4">
-                                    <p className="text-xl font-bold text-white mb-1 uppercase tracking-tight">{lastLog.exerciseName}</p>
+                                    <p className="text-lg font-bold text-white mb-1 uppercase tracking-tight">{lastLog.exerciseName}</p>
                                 </div>
                                 <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm pt-4 border-t border-gray-700/50">
                                     {/* Centered Date and Sede Relocation - Integrated single pill */}
@@ -185,14 +185,14 @@ const Welcome: React.FC<WelcomePageProps> = ({ setActiveTab }) => {
 
                     {/* Personal Record */}
                     <div className="w-full">
-                        <h2 className="text-xl font-extrabold text-amber-400 mb-4 uppercase tracking-wider flex items-center justify-center gap-2">
-                            <Trophy className="w-6 h-6"/> Tu Récord
+                        <h2 className="text-lg font-extrabold text-amber-400 mb-4 uppercase tracking-wider flex items-center justify-center gap-2">
+                            <Trophy className="w-5 h-5"/> Tu Récord
                         </h2>
                         {personalRecord ? (
                             <div className="bg-amber-900/10 rounded-xl border border-amber-500/30 p-4 sm:p-6 text-left animate-zoomInPop">
                                  <div className="flex justify-between items-start gap-4 mb-4">
                                     <div>
-                                        <p className="text-lg font-bold text-white">{personalRecord.exerciseName}</p>
+                                        <p className="text-base font-bold text-white">{personalRecord.exerciseName}</p>
                                         <p className="text-sm text-gray-400">{formatFullDisplayDate(personalRecord.date)}</p>
                                     </div>
                                 </div>
@@ -217,7 +217,7 @@ const Welcome: React.FC<WelcomePageProps> = ({ setActiveTab }) => {
                 {lastLog && personalRecord && (
                     <div className="mt-6 text-center">
                         {!isNewRecord && (
-                             <p className="text-lg font-semibold text-amber-300">
+                             <p className="text-base font-semibold text-amber-300">
                                 ¡Estás muy cerca de superar tu récord! ¡Sigue así!
                              </p>
                         )}

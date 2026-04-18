@@ -229,7 +229,7 @@ const Summary: React.FC = () => {
             <div className="flex items-center gap-4 mb-6">
                <div className="p-3 bg-cyan-500/20 rounded-full"><Dumbbell className="w-8 h-8 text-cyan-400" /></div>
                <div>
-                  <h2 className="text-2xl font-bold text-white"><span className="uppercase">{item.exerciseName}</span></h2>
+                  <h2 className="text-xl font-bold text-white"><span className="uppercase">{item.exerciseName}</span></h2>
                   <div className="flex items-center gap-2">
                       <p className="text-gray-400">{formatDisplayDate(item.date)}</p>
                       <span className={`${getSedeColor(item.sede)} text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1`}><MapPin className="w-3 h-3"/>{item.sede}</span>
@@ -365,7 +365,7 @@ const Summary: React.FC = () => {
                 onClick={() => toggleSummarySessionCollapse(session.date)}
               >
                 <div className="flex flex-col items-center justify-center gap-1">
-                  <h2 className="text-xl sm:text-2xl font-extrabold text-white flex items-center justify-center gap-3 px-20 relative">
+                  <h2 className="text-lg sm:text-xl font-extrabold text-white flex items-center justify-center gap-3 px-20 relative">
                     <Calendar className="w-6 h-6 text-cyan-400 flex-shrink-0"/>
                     <span className="truncate text-center">{isToday ? 'Entrenamiento de Hoy' : formatFullDisplayDate(session.date)}</span>
                     <ChevronDown className={`w-5 h-5 text-gray-400 absolute -right-6 top-1/2 -translate-y-1/2 transition-transform duration-300 ${!isSessionCollapsed ? 'rotate-180' : ''}`} />
@@ -373,7 +373,7 @@ const Summary: React.FC = () => {
                   
                   <div className="w-full relative flex justify-center items-center py-1">
                     {session.logs.length > 0 && session.logs[0].sede && (
-                         <span className={`${getSedeColor(session.logs[0].sede)} text-xs font-black px-3 py-1.5 rounded-full flex items-center gap-1 font-mono uppercase tracking-widest leading-none shadow-md border border-white/10`}>
+                         <span className={`${getSedeColor(session.logs[0].sede)} text-[10px] font-black px-3 py-1 rounded-full flex items-center gap-1 font-mono uppercase tracking-widest leading-none shadow-md border border-white/10`}>
                             <MapPin className="w-3 h-3"/>
                             {session.logs[0].sede}
                          </span>
@@ -394,8 +394,8 @@ const Summary: React.FC = () => {
                       <div className="bg-gray-800/60 border border-white/10 rounded-lg p-4 flex items-center justify-center gap-4 text-center text-white">
                           <Flame className="w-8 h-8 text-orange-400 flex-shrink-0" />
                           <div>
-                              <p className="text-base font-semibold text-gray-300">Quemaste un total de</p>
-                              <p className="text-2xl font-bold">{session.totalCalories.toLocaleString('es-ES')} Kcal</p>
+                              <p className="text-sm font-semibold text-gray-300">Quemaste un total de</p>
+                              <p className="text-xl font-bold">{session.totalCalories.toLocaleString('es-ES')} Kcal</p>
                           </div>
                       </div>
                   )}
@@ -422,7 +422,7 @@ const Summary: React.FC = () => {
                   return (
                     <div key={dayName}>
                        <button onClick={() => toggleSummaryDayCollapse(dayKey)} className="w-full flex justify-between items-center group gap-4 p-3 -m-3 rounded-lg hover:bg-white/5 transition-colors" aria-expanded={isDayExpanded}>
-                          <h3 className="text-2xl sm:text-3xl font-extrabold text-cyan-400 flex items-center justify-center gap-3 tracking-tight">
+                          <h3 className="text-xl sm:text-2xl font-extrabold text-cyan-400 flex items-center justify-center gap-3 tracking-tight">
                             <span className="bg-cyan-900/50 p-2 rounded-full flex-shrink-0"><Icon className="w-6 sm:w-7 h-6 sm:h-7" /></span>
                             <span className="truncate">{dayInfo.title}</span>
                           </h3>
