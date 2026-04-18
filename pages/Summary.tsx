@@ -305,22 +305,6 @@ const Summary: React.FC = () => {
             <div className="flex justify-between items-start gap-4">
                 <button onClick={(e) => { e.stopPropagation(); setSelectedItemForCard(log); }} className="min-w-0 flex-grow flex justify-center items-center rounded-xl hover:bg-white/5 p-2 -m-2 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-500/50" aria-label="Ver tarjeta de métricas">
                   <div className="flex justify-center flex-wrap gap-x-4 gap-y-3 text-sm pb-2 w-full">
-                    {/* Centered Date and Sede Relocation - Integrated single pill - REFINED AESTHETIC */}
-                    <div className="w-full px-4 mb-1">
-                        <div className="flex items-center justify-between w-full bg-white/5 pl-4 pr-2 py-1.5 rounded-full border border-white/10 shadow-lg shadow-black/20">
-                            <div className="flex items-center gap-2 overflow-hidden">
-                                <CalendarDays className="w-4 h-4 text-cyan-400 flex-shrink-0" />
-                                <span className="text-gray-300 font-bold text-sm whitespace-nowrap">{formatFullDisplayDate(log.date)}</span>
-                            </div>
-                            <div className="flex items-center gap-3 flex-shrink-0">
-                                <div className="h-4 w-px bg-white/10"></div>
-                                <span className={`${getSedeColor(log.sede)} text-[9px] font-black px-2.5 py-1 rounded-full flex items-center gap-1 font-mono uppercase tracking-widest leading-none shadow-sm`}>
-                                    <MapPin className="w-2.5 h-2.5"/>
-                                    {log.sede}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
                     {isNadaTab ? (<><MetricItem label="Tiempo" value={log.tiempo} unit="Min" Icon={Clock} comparison={comparisons.tiempo} /><MetricItem label="Velocidad" value={log.series} unit="Km/h" Icon={Zap} comparison={comparisons.series} /><MetricItem label="Distancia" value={log.reps} unit={log.distanceUnit ? (log.distanceUnit === 'KM' ? 'Km' : 'm') : ''} Icon={Gauge} comparison={comparisons.reps} /><MetricItem label="Calorías" value={log.calorias} unit="Kcal" Icon={Flame} comparison={comparisons.calorias} /><MetricItem label="Inclinación" value={log.kilos} unit="%" Icon={TrendingUp} comparison={comparisons.kilos} /></>) : 
                     (<><MetricItem label="Series" value={log.series} unit="" Icon={BarChart4} comparison={comparisons.series} /><MetricItem label="Reps" value={log.reps} unit="" Icon={Repeat} comparison={comparisons.reps} /><MetricItem label="Kilos" value={log.kilos} unit="kgs" Icon={Weight} comparison={comparisons.kilos} /><MetricItem label="Tiempo" value={log.tiempo} unit="Min" Icon={Clock} comparison={comparisons.tiempo} /><MetricItem label="Calorías" value={log.calorias} unit="Kcal" Icon={Flame} comparison={comparisons.calorias} /></>)}
                   </div>
@@ -376,10 +360,20 @@ const Summary: React.FC = () => {
           return (
             <div key={session.date} style={{ animationDelay: `${sessionIndex * 150}ms` }} className="bg-gray-900/60 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden animate-zoomInPop opacity-0">
               <div className="relative p-4 sm:p-6 bg-gray-800/40">
-                <h2 className="text-xl sm:text-2xl font-extrabold text-white flex items-center justify-center gap-3">
-                  <Calendar className="w-6 h-6 text-cyan-400 flex-shrink-0"/>
-                  <span className="truncate text-center">{isToday ? 'Entrenamiento de Hoy' : formatFullDisplayDate(session.date)}</span>
-                </h2>
+                <div className="flex flex-col items-center justify-center gap-2">
+                  <h2 className="text-xl sm:text-2xl font-extrabold text-white flex items-center justify-center gap-3">
+                    <Calendar className="w-6 h-6 text-cyan-400 flex-shrink-0"/>
+                    <span className="truncate text-center">{isToday ? 'Entrenamiento de Hoy' : formatFullDisplayDate(session.date)}</span>
+                  </h2>
+                  {session.logs.length > 0 && session.logs[0].sede && (
+                    <div className="flex justify-center -mt-1">
+                       <span className={`${getSedeColor(session.logs[0].sede)} text-xs font-black px-3 py-1 rounded-full flex items-center gap-1 font-mono uppercase tracking-widest leading-none shadow-md border border-white/10`}>
+                          <MapPin className="w-3 h-3"/>
+                          {session.logs[0].sede}
+                       </span>
+                    </div>
+                  )}
+                </div>
                 <div className="absolute top-1/2 -translate-y-1/2 right-4 flex items-center gap-1">
                   <button onClick={() => setExportOptions({ title: `Exportar Sesión`, onExportJson: () => downloadJSON({ summaryLogs: session.logs }, `sesion-${session.date}.json`), onExportText: () => downloadTXT(generateSessionText(session.logs, session.date, session.totalCalories), `sesion-${session.date}.txt`) })} className="p-2 text-gray-400 hover:text-cyan-500 hover:bg-cyan-500/10 rounded-full transition-colors" aria-label={`Exportar sesión`}><Save className="w-5 h-5" /></button>
                   <button onClick={() => setDeletionTarget({ type: 'session', id: session.date, name: `la sesión del ${formatFullDisplayDate(session.date)}`, sessionLogs: session.logs })} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-full transition-colors" aria-label={`Eliminar sesión`}><Trash2 className="w-5 h-5" /></button>

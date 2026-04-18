@@ -313,20 +313,6 @@ const DailySummaryLogItem: React.FC<{ log: ExerciseLog; allLogs: ExerciseLog[] }
             </div>
             {hasMetrics && (
                 <div className="mt-4 pt-4 border-t border-gray-700/50 grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-3 text-sm">
-                    {/* Centered Date and Sede Relocation - Integrated single pill */}
-                    <div className="col-span-full flex justify-center mb-1">
-                        <div className="flex items-center gap-3 bg-white/5 pl-4 pr-1.5 py-1 rounded-full border border-white/5">
-                            <div className="flex items-center gap-2">
-                                <CalendarDays className="w-4 h-4 text-cyan-400" />
-                                <span className="text-gray-300 font-semibold">{formatFullDisplayDate(log.date)}</span>
-                            </div>
-                            <div className="h-4 w-px bg-white/10 mx-1"></div>
-                            <span className={`${getSedeColor(log.sede)} text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 font-mono uppercase tracking-wider`}>
-                                <MapPin className="w-3 h-3"/>
-                                {log.sede}
-                            </span>
-                        </div>
-                    </div>
                     {isNadaTab && <MetricItem label="Tiempo" value={log.tiempo!} unit="Min" Icon={Clock} comparison={comparisons.tiempo} />}
                     <MetricItem label={isNadaTab ? 'Velocidad' : 'Series'} value={log.series!} unit={isNadaTab ? 'Km/h' : ''} Icon={isNadaTab ? Zap : BarChart4} comparison={comparisons.series} />
                     <MetricItem label={isNadaTab ? 'Distancia' : 'Reps'} value={log.reps!} unit={isNadaTab && log.distanceUnit ? ` ${log.distanceUnit === 'KM' ? 'Km' : 'm'}` : ''} Icon={isNadaTab ? Gauge : Repeat} comparison={comparisons.reps} />
@@ -431,10 +417,18 @@ const DailySummaryModal: React.FC<{ date: string | null; onClose: () => void; on
             />
             <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 animate-fadeIn" onClick={onClose}>
                 <div className="bg-gray-800/80 backdrop-blur-xl border border-white/10 rounded-lg shadow-xl p-6 w-full max-w-2xl m-4 animate-scaleIn flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
-                    <div className="relative flex justify-center items-center mb-6 flex-shrink-0">
+                    <div className="relative flex flex-col items-center justify-center mb-6 flex-shrink-0">
                         <button onClick={() => setIsCalendarOpen(true)} className="text-xl font-bold text-cyan-400 capitalize hover:text-cyan-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-500/70 rounded-md px-2 py-1 text-center">
                             {formatDisplayDate(date)}
                         </button>
+                        {Object.values(dailyData.groupedItems).flat().length > 0 && (
+                            <div className="flex justify-center mt-1">
+                                <span className={`${getSedeColor(Object.values(dailyData.groupedItems).flat()[0].sede)} text-[10px] font-black px-3 py-1 rounded-full flex items-center gap-1 font-mono uppercase tracking-widest leading-none shadow-md border border-white/10`}>
+                                    <MapPin className="w-3 h-3"/>
+                                    {Object.values(dailyData.groupedItems).flat()[0].sede}
+                                </span>
+                            </div>
+                        )}
                         <button onClick={onClose} className="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-white transition" aria-label="Cerrar">
                             <X className="w-6 h-6" />
                         </button>
@@ -668,7 +662,9 @@ const AppContent: React.FC = () => {
             )}
             
             <div className="flex-grow flex justify-center items-center">
-              {activeSede ? <SedeWeekCalendar onDateClick={setDailySummaryDate} onEmptyDateClick={() => setIsMonthCalendarOpen(true)} todayStr={todaysDateISO} /> : <HomeWeekCalendar onClick={() => setIsMonthCalendarOpen(true)} todayStr={todaysDateISO}/>}
+              {activeTab !== 'Resumen' && (
+                activeSede ? <SedeWeekCalendar onDateClick={setDailySummaryDate} onEmptyDateClick={() => setIsMonthCalendarOpen(true)} todayStr={todaysDateISO} /> : <HomeWeekCalendar onClick={() => setIsMonthCalendarOpen(true)} todayStr={todaysDateISO}/>
+              )}
             </div>
             <div className="w-10" />
           </div>
