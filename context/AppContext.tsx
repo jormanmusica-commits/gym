@@ -381,11 +381,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const mergedSedes = { ...initialSedes, ...savedState.sedes };
       const sedeOrder = savedState.sedeOrder || Object.keys(mergedSedes);
 
+      const restoredActiveSede = savedState.activeSede !== undefined ? savedState.activeSede : null;
+
       return {
         ...defaultState,
         ...savedState,
-        activeSede: savedState.activeSede !== undefined ? savedState.activeSede : null,
-        activeTab: savedState.activeTab || 'Inicio',
+        activeSede: restoredActiveSede,
+        activeTab: restoredActiveSede ? 'Bienvenida' : 'Inicio',
         sedes: mergedSedes,
         sedeOrder,
       };
