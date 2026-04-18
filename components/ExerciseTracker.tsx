@@ -660,11 +660,11 @@ const DailyLogCard: React.FC<DailyLogCardProps> = ({
         <div className="bg-black/20 rounded-xl border border-white/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-cyan-500/10 hover:border-cyan-400/50">
             {/* HEADER */}
             <div className="p-3 sm:p-4 cursor-pointer" onClick={onToggleExpand}>
-                <div className="flex justify-between items-start gap-4">
-                    <div className="flex-grow min-w-0 flex flex-col items-center text-center">
+                <div className="relative flex items-center justify-center min-h-[40px]">
+                    <div className="flex-grow text-center px-16">
                         <p className="font-bold text-white truncate text-lg w-full">{log.exerciseName || 'Sin nombre'}</p>
                     </div>
-                    <div className="flex-shrink-0 flex items-center gap-1 sm:gap-2">
+                    <div className="absolute right-0 flex items-center gap-1 sm:gap-2">
                         <span className="p-1 text-cyan-400" aria-label={isExpanded ? 'Ocultar detalles' : 'Mostrar detalles'}>
                             <ChevronDown className={`w-6 h-6 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
                         </span>

@@ -300,8 +300,8 @@ const Summary: React.FC = () => {
 
     return (
       <div className="py-3 sm:py-4">
-        <div className="flex justify-between items-start gap-4">
-          <div className="flex-grow min-w-0">
+        <div className="relative flex items-center justify-center gap-4">
+          <div className="flex-grow min-w-0 px-10">
             <div className="flex flex-col items-center text-center mb-4">
                 <h4 className="font-bold text-white text-lg truncate w-full uppercase tracking-tight">{log.exerciseName}</h4>
             </div>
@@ -341,10 +341,10 @@ const Summary: React.FC = () => {
               </div>
               {log.notes && <div className="mt-3 pt-3 border-t border-gray-700/50"><div className="flex items-start gap-2 text-gray-300 text-sm italic"><NotebookText className="w-4 h-4 mt-0.5 flex-shrink-0 text-cyan-400" /><p className="whitespace-pre-wrap">{log.notes}</p></div></div>}
           </div>
-          <div className="flex-shrink-0 flex flex-col items-center justify-center gap-2 pl-2">
+          <div className="absolute right-0 flex flex-col items-center justify-center gap-2 pl-2">
               <button onClick={(e) => { e.stopPropagation(); setExportOptions({ title: `Exportar ${log.exerciseName}`, onExportJson: () => downloadJSON({ summaryLogs: [log] }, `ejercicio-${log.exerciseName.replace(/\s+/g, '-')}-${log.date}.json`), onExportText: () => downloadTXT(formatExerciseLogAsText(log), `ejercicio-${log.exerciseName.replace(/\s+/g, '-')}-${log.date}.txt`) }); }} className="p-2 text-gray-400 hover:text-cyan-500 transition rounded-full hover:bg-cyan-500/10" aria-label={`Exportar registro`}><Save className="w-5 h-5" /></button>
               <button onClick={(e) => { e.stopPropagation(); setDeletionTarget({ type: 'exercise', id: log.id, name: `el registro de ${log.exerciseName}` }); }} className="p-2 text-gray-400 hover:text-red-500 transition rounded-full hover:bg-red-500/10" aria-label={`Quitar del resumen`}><Trash2 className="w-5 h-5" /></button>
-            </div>
+          </div>
         </div>
       </div>
     );

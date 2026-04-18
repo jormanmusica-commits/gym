@@ -329,17 +329,29 @@ const NadaTracker: React.FC<{ dayName: string; }> = ({ dayName }) => {
         <div className={`p-4 rounded-xl border border-white/10 ${isSaved ? 'bg-black/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-cyan-500/10 hover:border-cyan-400/50' : 'bg-gray-800/70'}`}>
           {isSaved ? (
             <div className="animate-fadeIn">
-              <div className="flex justify-between items-start gap-4">
-                <div className="flex-grow min-w-0">
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <CalendarDays className="w-5 h-5 text-cyan-400 flex-shrink-0"/>
-                      <p className="font-bold text-white truncate">{formatDisplayDate(date)}</p>
+              <div className="relative flex items-center justify-center min-h-[40px] mb-2">
+                <div className="flex-grow text-center px-16">
+                  <div className="flex flex-col items-center">
+                    <div className="flex justify-center mb-1">
+                        <div className="flex items-center gap-3 bg-white/5 pl-4 pr-1.5 py-1 rounded-full border border-white/5">
+                            <div className="flex items-center gap-2">
+                                <CalendarDays className="w-4 h-4 text-cyan-400" />
+                                <span className="text-gray-300 font-semibold text-sm">{formatDisplayDate(date)}</span>
+                            </div>
+                            {activeSede && (
+                                <>
+                                    <div className="h-4 w-px bg-white/10 mx-1"></div>
+                                    <span className={`${getSedeColor(activeSede)} text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 font-mono uppercase tracking-wider`}>
+                                        <MapPin className="w-3 h-3"/>
+                                        {activeSede}
+                                    </span>
+                                </>
+                            )}
+                        </div>
                     </div>
-                    {activeSede && <span className={`${getSedeColor(activeSede)} text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1 flex-shrink-0`}><MapPin className="w-3 h-3"/>{activeSede}</span>}
                   </div>
                 </div>
-                <div className="flex-shrink-0 flex items-center gap-2">
+                <div className="absolute right-0 flex items-center gap-2">
                   <button onClick={resetForm} className={`${actionButtonClass} bg-gradient-to-br from-cyan-500 to-blue-500 focus:ring-cyan-500/50 hover:shadow-xl shadow-cyan-500/20 text-sm`}>
                     <Plus className="w-4 h-4" /> Nuevo
                   </button>

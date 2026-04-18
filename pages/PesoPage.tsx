@@ -184,8 +184,11 @@ const HistoryCard: React.FC<{
             aria-label={`Editar registro de ${formatFullDisplayDate(entry.date)}`}
         >
             <div className="flex justify-between items-start mb-3">
-                <div>
-                    <p className="font-bold text-lg text-white">{formatFullDisplayDate(entry.date)}</p>
+                <div className="flex-grow flex justify-center">
+                    <div className="flex items-center gap-2 bg-white/5 px-4 py-1.5 rounded-full border border-white/5">
+                        <CalendarDays className="w-4 h-4 text-cyan-400" />
+                        <span className="text-gray-300 font-semibold text-sm">{formatFullDisplayDate(entry.date)}</span>
+                    </div>
                 </div>
                 <div className="flex-shrink-0">
                     <button 
