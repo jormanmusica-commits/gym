@@ -308,18 +308,20 @@ const Summary: React.FC = () => {
             <div className="flex justify-between items-start gap-4">
                 <button onClick={(e) => { e.stopPropagation(); setSelectedItemForCard(log); }} className="min-w-0 flex-grow flex justify-center items-center rounded-lg hover:bg-white/5 p-2 -m-2 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-500/50" aria-label="Ver tarjeta de métricas">
                   <div className="flex justify-center flex-wrap gap-x-4 gap-y-3 text-sm pb-2">
-                    {/* Centered Date and Sede Relocation - Integrated single pill */}
+                    {/* Centered Date and Sede Relocation - Integrated single pill - EXPANDED */}
                     <div className="w-full flex justify-center mb-1">
-                        <div className="flex items-center gap-3 bg-white/5 pl-4 pr-1.5 py-1 rounded-full border border-white/5">
+                        <div className="flex items-center justify-between w-full bg-white/5 pl-4 pr-2 py-1.5 rounded-full border border-white/10">
                             <div className="flex items-center gap-2">
                                 <CalendarDays className="w-4 h-4 text-cyan-400" />
-                                <span className="text-gray-300 font-semibold">{formatFullDisplayDate(log.date)}</span>
+                                <span className="text-gray-300 font-bold text-sm">{formatFullDisplayDate(log.date)}</span>
                             </div>
-                            <div className="h-4 w-px bg-white/10 mx-1"></div>
-                            <span className={`${getSedeColor(log.sede)} text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 font-mono uppercase tracking-wider`}>
-                                <MapPin className="w-3 h-3"/>
-                                {log.sede}
-                            </span>
+                            <div className="flex items-center gap-3">
+                                <div className="h-4 w-px bg-white/10"></div>
+                                <span className={`${getSedeColor(log.sede)} text-[10px] font-black px-3 py-1 rounded-full flex items-center gap-1 font-mono uppercase tracking-widest`}>
+                                    <MapPin className="w-3 h-3"/>
+                                    {log.sede}
+                                </span>
+                            </div>
                         </div>
                     </div>
                     {isNadaTab ? (<><MetricItem label="Tiempo" value={log.tiempo} unit="Min" Icon={Clock} comparison={comparisons.tiempo} /><MetricItem label="Velocidad" value={log.series} unit="Km/h" Icon={Zap} comparison={comparisons.series} /><MetricItem label="Distancia" value={log.reps} unit={log.distanceUnit ? (log.distanceUnit === 'KM' ? 'Km' : 'm') : ''} Icon={Gauge} comparison={comparisons.reps} /><MetricItem label="Calorías" value={log.calorias} unit="Kcal" Icon={Flame} comparison={comparisons.calorias} /><MetricItem label="Inclinación" value={log.kilos} unit="%" Icon={TrendingUp} comparison={comparisons.kilos} /></>) : 
@@ -357,16 +359,6 @@ const Summary: React.FC = () => {
       <ShareableCardModal item={selectedItemForCard} onClose={() => setSelectedItemForCard(null)} />
       <ExportModal isOpen={!!exportOptions} onClose={() => setExportOptions(null)} title={exportOptions?.title || 'Elige tu formato'} onExportJson={() => { exportOptions?.onExportJson(); setExportOptions(null); }} onExportText={() => { exportOptions?.onExportText(); setExportOptions(null); }} />
 
-      {todaySession && todaySession.totalCalories > 0 && (
-          <div className="bg-gradient-to-br from-orange-500 to-amber-600 rounded-lg p-4 flex items-center justify-center gap-4 text-center text-white shadow-lg shadow-orange-500/20 animate-fadeInUp">
-              <Flame className="w-10 h-10 animate-pulse-slow flex-shrink-0" />
-              <div>
-                  <p className="text-lg font-semibold">Hoy has quemado un total de</p>
-                  <p className="text-4xl font-extrabold tracking-tight">{todaySession.totalCalories.toLocaleString('es-ES')} Kcal</p>
-              </div>
-          </div>
-      )}
-      
       <div className="bg-gray-900/60 backdrop-blur-md border border-white/10 rounded-xl p-4"><div className="flex justify-center gap-2"><button onClick={() => setExportOptions({ title: 'Exportar Resumen', onExportJson: exportSummaryData, onExportText: exportSummaryDataAsText })} className={`${baseButtonClass} bg-gradient-to-r from-indigo-500 to-purple-500 focus:ring-indigo-500`} aria-label="Exportar resumen de datos"><FileUp className="w-4 h-4" /><span>Exportar</span></button><button onClick={handleImportClick} className={`${baseButtonClass} bg-gradient-to-r from-green-500 to-green-600 focus:ring-green-500`} aria-label="Importar datos desde un archivo"><Upload className="w-4 h-4" /><span>Importar</span></button><input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="application/json" /><button onClick={() => setExportOptions({ title: 'Exportar Todo', onExportJson: exportData, onExportText: exportDataAsText })} className={`${baseButtonClass} bg-gradient-to-r from-cyan-500 to-blue-500 focus:ring-cyan-500`} aria-label="Exportar todos los datos"><Download className="w-4 h-4" /><span>Exportar Todo</span></button></div></div>
 
       {summaryLogs.length === 0 ? (
