@@ -4,7 +4,7 @@ import { AppProvider, useAppContext } from './context/AppContext';
 import MyExercises from './pages/MyExercises';
 import WorkoutDay from './pages/WorkoutDay';
 import Summary from './pages/Summary';
-import { Sparkles, Menu, Home, BarChart4, Dumbbell, Shirt, Footprints, Shield, Hand, ChevronLeft, ChevronRight, X, Weight, Repeat, Zap, Gauge, TrendingUp, Flame, MapPin, NotebookText, Clock, HeartPulse, Award, ArrowUp, ArrowDown, Lightbulb, ChevronDown, Scale, Bug } from 'lucide-react';
+import { Sparkles, Menu, Home, BarChart4, Dumbbell, Shirt, Footprints, Shield, Hand, ChevronLeft, ChevronRight, X, Weight, Repeat, Zap, Gauge, TrendingUp, Flame, MapPin, NotebookText, Clock, HeartPulse, Award, ArrowUp, ArrowDown, Lightbulb, ChevronDown, Scale, Bug, CalendarDays, Save, Trash2, Check } from 'lucide-react';
 import ConsejosPage from './pages/ConsejosPage';
 import type { ExerciseLog } from './types';
 import Welcome from './pages/Welcome';
@@ -308,14 +308,22 @@ const DailySummaryLogItem: React.FC<{ log: ExerciseLog; allLogs: ExerciseLog[] }
 
     return (
         <div className="bg-black/20 rounded-lg p-4 border border-white/10">
-            <div className="flex items-center gap-3">
-                <div>
-                    <h3 className="font-bold text-white truncate">{log.exerciseName}</h3>
-                    <span className={`${getSedeColor(log.sede)} text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1`}><MapPin className="w-3 h-3"/>{log.sede}</span>
-                </div>
+            <div className="flex flex-col items-center text-center mb-4">
+                <h3 className="font-bold text-white truncate w-full text-lg uppercase tracking-tight">{log.exerciseName}</h3>
             </div>
             {hasMetrics && (
                 <div className="mt-4 pt-4 border-t border-gray-700/50 grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-3 text-sm">
+                    {/* Centered Date and Sede Relocation */}
+                    <div className="col-span-full flex flex-wrap justify-center items-center gap-2 mb-2">
+                        <div className="flex items-center gap-2 bg-white/5 px-4 py-1.5 rounded-full border border-white/5">
+                            <CalendarDays className="w-4 h-4 text-cyan-400" />
+                            <span className="text-gray-300 font-semibold">{formatFullDisplayDate(log.date)}</span>
+                        </div>
+                        <span className={`${getSedeColor(log.sede)} text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1 font-mono uppercase tracking-wider`}>
+                            <MapPin className="w-3 h-3"/>
+                            {log.sede}
+                        </span>
+                    </div>
                     {isNadaTab && <MetricItem label="Tiempo" value={log.tiempo!} unit="Min" Icon={Clock} comparison={comparisons.tiempo} />}
                     <MetricItem label={isNadaTab ? 'Velocidad' : 'Series'} value={log.series!} unit={isNadaTab ? 'Km/h' : ''} Icon={isNadaTab ? Zap : BarChart4} comparison={comparisons.series} />
                     <MetricItem label={isNadaTab ? 'Distancia' : 'Reps'} value={log.reps!} unit={isNadaTab && log.distanceUnit ? ` ${log.distanceUnit === 'KM' ? 'Km' : 'm'}` : ''} Icon={isNadaTab ? Gauge : Repeat} comparison={comparisons.reps} />

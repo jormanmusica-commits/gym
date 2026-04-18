@@ -441,17 +441,11 @@ const ExerciseLogModal: React.FC<ExerciseLogModalProps> = ({ isOpen, onClose, on
             <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 animate-fadeIn" onClick={onClose}>
                 <div className="bg-gray-800/80 backdrop-blur-xl border border-white/10 rounded-lg shadow-xl p-6 w-full max-w-lg m-4 animate-scaleIn flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
                     <div className="flex justify-between items-center mb-4 flex-shrink-0">
-                        <div className="w-10 h-10" /> {/* Spacer to balance the right side controls */}
-                        <h2 className="text-xl font-bold text-cyan-400 text-center flex-grow">
+                        <div className="w-10 h-10 md:hidden" /> {/* Spacer for centered header on mobile */}
+                        <h2 className="text-xl font-bold text-cyan-400 text-center flex-grow uppercase tracking-widest">
                             {initialData ? 'Editar Ejercicio' : 'Añadir Ejercicio'}
                         </h2>
-                        <div className="flex items-center gap-1">
-                            <button onClick={() => setIsCalendarOpen(true)} className="bg-gray-700 border border-gray-600 rounded-md py-1 px-2 transition text-white text-sm flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-cyan-500/70">
-                                <CalendarDays className="w-4 h-4"/>
-                                {formatDateForButton(formData.date)}
-                            </button>
-                            <button onClick={onClose} className="p-2 text-gray-400 hover:text-white transition"><X className="w-6 h-6" /></button>
-                        </div>
+                        <button onClick={onClose} className="p-2 text-gray-400 hover:text-white transition" aria-label="Cerrar"><X className="w-6 h-6" /></button>
                     </div>
                     
                     <div className="overflow-y-auto pr-2 space-y-4 no-scrollbar">
@@ -501,8 +495,21 @@ const ExerciseLogModal: React.FC<ExerciseLogModalProps> = ({ isOpen, onClose, on
                         
                         {isNadaTab ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="sm:col-span-2">
+                                    <label className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-1 uppercase tracking-wider">
+                                        <CalendarDays className="w-4 h-4 text-cyan-400" />
+                                        Fecha
+                                    </label>
+                                    <button
+                                        onClick={() => setIsCalendarOpen(true)}
+                                        className={`${inputClasses} text-left flex items-center justify-between text-lg font-bold text-white uppercase tracking-tight`}
+                                    >
+                                        <span>{formatDateForButton(formData.date)}</span>
+                                        <CalendarDays className="w-5 h-5 text-cyan-400" />
+                                    </button>
+                                </div>
                                 <div>
-                                    <label className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-1"><Clock className="w-4 h-4 text-cyan-400" />Tiempo</label>
+                                    <label className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-1 uppercase tracking-wider"><Clock className="w-4 h-4 text-cyan-400" />Tiempo</label>
                                     <button
                                         onClick={() => setIsTimePickerOpen(true)}
                                         className={`${inputClasses} text-left`}
@@ -533,19 +540,32 @@ const ExerciseLogModal: React.FC<ExerciseLogModalProps> = ({ isOpen, onClose, on
                         ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-1"><BarChart4 className="w-4 h-4 text-cyan-400" />Series</label>
+                                    <label className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-1 uppercase tracking-wider"><BarChart4 className="w-4 h-4 text-cyan-400" />Series</label>
                                     <input type="text" inputMode="numeric" value={formData.series} onChange={(e) => handleInputChange('series', e.target.value)} className={inputClasses} />
                                 </div>
                                 <div>
-                                    <label className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-1"><Repeat className="w-4 h-4 text-cyan-400" />Repeticiones</label>
+                                    <label className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-1 uppercase tracking-wider"><Repeat className="w-4 h-4 text-cyan-400" />Repeticiones</label>
                                     <input type="text" inputMode="numeric" value={formData.reps} onChange={(e) => handleInputChange('reps', e.target.value)} className={inputClasses} />
                                 </div>
                                 <div>
-                                    <label className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-1"><Weight className="w-4 h-4 text-cyan-400" />Kilos</label>
+                                    <label className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-1 uppercase tracking-wider"><Weight className="w-4 h-4 text-cyan-400" />Kilos</label>
                                     <input type="text" inputMode="decimal" value={formData.kilos} onChange={(e) => handleInputChange('kilos', e.target.value)} className={inputClasses} />
                                 </div>
+                                <div className="sm:col-span-2">
+                                    <label className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-1 uppercase tracking-wider">
+                                        <CalendarDays className="w-4 h-4 text-cyan-400" />
+                                        Fecha
+                                    </label>
+                                    <button
+                                        onClick={() => setIsCalendarOpen(true)}
+                                        className={`${inputClasses} text-left flex items-center justify-between text-lg font-bold text-white uppercase tracking-tight`}
+                                    >
+                                        <span>{formatDateForButton(formData.date)}</span>
+                                        <CalendarDays className="w-5 h-5 text-cyan-400" />
+                                    </button>
+                                </div>
                                 <div>
-                                    <label className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-1"><Clock className="w-4 h-4 text-cyan-400" />Tiempo</label>
+                                    <label className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-1 uppercase tracking-wider"><Clock className="w-4 h-4 text-cyan-400" />Tiempo</label>
                                     <button
                                         onClick={() => setIsTimePickerOpen(true)}
                                         className={`${inputClasses} text-left`}
@@ -642,16 +662,6 @@ const DailyLogCard: React.FC<DailyLogCardProps> = ({
             <div className="p-3 sm:p-4 cursor-pointer" onClick={onToggleExpand}>
                 <div className="flex justify-between items-start gap-4">
                     <div className="flex-grow min-w-0 flex flex-col items-center text-center">
-                        <div className="flex items-center justify-center flex-wrap gap-2 mb-1">
-                            <div className="flex items-center gap-1.5 text-xs text-white min-w-0">
-                                <CalendarDays className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
-                                <span className="truncate">{formatFullDisplayDate(log.date)}</span>
-                            </div>
-                            <span className={`${getSedeColor(log.sede)} text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1 flex-shrink-0`}>
-                                <MapPin className="w-3 h-3"/>
-                                {log.sede}
-                            </span>
-                        </div>
                         <p className="font-bold text-white truncate text-lg w-full">{log.exerciseName || 'Sin nombre'}</p>
                     </div>
                     <div className="flex-shrink-0 flex items-center gap-1 sm:gap-2">
@@ -679,6 +689,17 @@ const DailyLogCard: React.FC<DailyLogCardProps> = ({
                                 <div className="flex justify-between items-start gap-4">
                                     <div className="min-w-0 flex-grow flex justify-center items-center">
                                         <div className="flex justify-center flex-wrap gap-x-4 gap-y-3 text-sm">
+                                          {/* Date and Sede relocated here as requested */}
+                                          <div className="w-full flex flex-wrap justify-center items-center gap-2 mb-2">
+                                              <div className="flex items-center gap-2 bg-white/5 px-4 py-1.5 rounded-full border border-white/5">
+                                                  <CalendarDays className="w-4 h-4 text-cyan-400" />
+                                                  <span className="text-gray-300 font-semibold">{formatFullDisplayDate(log.date)}</span>
+                                              </div>
+                                              <span className={`${getSedeColor(log.sede)} text-[10px] font-bold px-2 py-1 rounded-full flex items-center justify-center gap-1 font-mono uppercase tracking-wider`}>
+                                                  <MapPin className="w-3 h-3"/>
+                                                  {log.sede}
+                                              </span>
+                                          </div>
                                           {isNadaTab ? (
                                               <>
                                                   <MetricItem label="Tiempo" value={log.tiempo} unit="Min" Icon={Clock} comparison={comparisons.tiempo} />
