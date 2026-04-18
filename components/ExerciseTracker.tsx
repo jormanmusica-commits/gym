@@ -691,8 +691,8 @@ const DailyLogCard: React.FC<DailyLogCardProps> = ({
                                 <div className="flex justify-between items-start gap-4">
                                     <div className="min-w-0 flex-grow flex justify-center items-center">
                                         <div className="flex justify-center flex-wrap gap-x-4 gap-y-3 text-sm">
-                                          {/* Date and Sede relocated here as requested - Integrated single pill - EXPANDED TO LIMIT */}
-                                          <div className="w-full mb-1">
+                                          {/* Date and Sede relocated here as requested - Integrated single pill - REFINED AESTHETIC */}
+                                          <div className="w-full px-4 mb-1">
                                               <div className="flex items-center justify-between w-full bg-white/5 pl-4 pr-2 py-1.5 rounded-full border border-white/10 shadow-lg shadow-black/20">
                                                   <div className="flex items-center gap-2 overflow-hidden">
                                                       <CalendarDays className="w-4 h-4 text-cyan-400 flex-shrink-0" />
@@ -700,8 +700,8 @@ const DailyLogCard: React.FC<DailyLogCardProps> = ({
                                                   </div>
                                                   <div className="flex items-center gap-3 flex-shrink-0">
                                                       <div className="h-4 w-px bg-white/10"></div>
-                                                      <span className={`${getSedeColor(log.sede)} text-[10px] font-black px-3 py-1.5 rounded-full flex items-center justify-center gap-1 font-mono uppercase tracking-widest leading-none`}>
-                                                          <MapPin className="w-3 h-3"/>
+                                                      <span className={`${getSedeColor(log.sede)} text-[9px] font-black px-2.5 py-1.5 rounded-full flex items-center justify-center gap-1 font-mono uppercase tracking-widest leading-none shadow-sm`}>
+                                                          <MapPin className="w-2.5 h-2.5"/>
                                                           {log.sede}
                                                       </span>
                                                   </div>
