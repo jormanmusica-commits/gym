@@ -129,8 +129,8 @@ const Summary: React.FC = () => {
     exportDataAsText, exportSummaryDataAsText,
     downloadJSON, downloadTXT,
     sedeColorStyles,
-    summaryCollapsedDays, summaryCollapsedExercises,
-    toggleSummaryDayCollapse, toggleSummaryExerciseCollapse,
+    summaryCollapsedDays, summaryCollapsedExercises, summaryCollapsedSessions,
+    toggleSummaryDayCollapse, toggleSummaryExerciseCollapse, toggleSummarySessionCollapse,
     todaysDateISO,
   } = useAppContext();
   const [lightboxMedia, setLightboxMedia] = useState<{ allMedia: ExerciseMedia[]; startIndex: number; logId: string; } | null>(null);
@@ -356,14 +356,19 @@ const Summary: React.FC = () => {
           const dayOrder = ['Día 5', 'Día 1', 'Día 2', 'Día 3', 'Día 4'];
           const sortedDayKeys = Object.keys(logsByDay).sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b));
           const isToday = session.date === todaysDateISO;
+          const isSessionCollapsed = summaryCollapsedSessions.includes(session.date);
 
           return (
             <div key={session.date} style={{ animationDelay: `${sessionIndex * 150}ms` }} className="bg-gray-900/60 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden animate-zoomInPop opacity-0">
-              <div className="relative p-4 sm:p-6 bg-gray-800/40">
+              <div 
+                className="relative p-4 sm:p-6 bg-gray-800/40 cursor-pointer hover:bg-gray-800/60 transition-colors group"
+                onClick={() => toggleSummarySessionCollapse(session.date)}
+              >
                 <div className="flex flex-col items-center justify-center gap-1">
-                  <h2 className="text-xl sm:text-2xl font-extrabold text-white flex items-center justify-center gap-3 px-12">
+                  <h2 className="text-xl sm:text-2xl font-extrabold text-white flex items-center justify-center gap-3 px-20 relative">
                     <Calendar className="w-6 h-6 text-cyan-400 flex-shrink-0"/>
                     <span className="truncate text-center">{isToday ? 'Entrenamiento de Hoy' : formatFullDisplayDate(session.date)}</span>
+                    <ChevronDown className={`w-5 h-5 text-gray-400 absolute -right-6 top-1/2 -translate-y-1/2 transition-transform duration-300 ${!isSessionCollapsed ? 'rotate-180' : ''}`} />
                   </h2>
                   
                   <div className="w-full relative flex justify-center items-center py-1">
@@ -374,27 +379,31 @@ const Summary: React.FC = () => {
                          </span>
                     )}
                     
-                    <div className="absolute right-0 flex items-center gap-1 bg-white/5 rounded-full px-1 py-0.5 border border-white/5 shadow-inner">
-                      <button onClick={() => setExportOptions({ title: `Exportar Sesión`, onExportJson: () => downloadJSON({ summaryLogs: session.logs }, `sesion-${session.date}.json`), onExportText: () => downloadTXT(generateSessionText(session.logs, session.date, session.totalCalories), `sesion-${session.date}.txt`) })} className="p-2 text-gray-400 hover:text-cyan-500 hover:bg-cyan-500/10 rounded-full transition-colors" aria-label={`Exportar sesión`} title="Exportar sesión"><Save className="w-5 h-5" /></button>
+                    <div className="absolute right-0 flex items-center gap-1 bg-white/5 rounded-full px-1 py-0.5 border border-white/5 shadow-inner" onClick={(e) => e.stopPropagation()}>
+                      <button onClick={(e) => { e.stopPropagation(); setExportOptions({ title: `Exportar Sesión`, onExportJson: () => downloadJSON({ summaryLogs: session.logs }, `sesion-${session.date}.json`), onExportText: () => downloadTXT(generateSessionText(session.logs, session.date, session.totalCalories), `sesion-${session.date}.txt`) }); }} className="p-2 text-gray-400 hover:text-cyan-500 hover:bg-cyan-500/10 rounded-full transition-colors" aria-label={`Exportar sesión`} title="Exportar sesión"><Save className="w-5 h-5" /></button>
                       <div className="w-px h-4 bg-white/10 mx-0.5"></div>
-                      <button onClick={() => setDeletionTarget({ type: 'session', id: session.date, name: `la sesión del ${formatFullDisplayDate(session.date)}`, sessionLogs: session.logs })} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-full transition-colors" aria-label={`Eliminar sesión`} title="Eliminar sesión"><Trash2 className="w-5 h-5" /></button>
+                      <button onClick={(e) => { e.stopPropagation(); setDeletionTarget({ type: 'session', id: session.date, name: `la sesión del ${formatFullDisplayDate(session.date)}`, sessionLogs: session.logs }); }} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-full transition-colors" aria-label={`Eliminar sesión`} title="Eliminar sesión"><Trash2 className="w-5 h-5" /></button>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="p-4 sm:p-6 space-y-6">
-                {!isToday && session.totalCalories > 0 && (
-                    <div className="bg-gray-800/60 border border-white/10 rounded-lg p-4 flex items-center justify-center gap-4 text-center text-white">
-                        <Flame className="w-8 h-8 text-orange-400 flex-shrink-0" />
-                        <div>
-                            <p className="text-base font-semibold text-gray-300">Quemaste un total de</p>
-                            <p className="text-2xl font-bold">{session.totalCalories.toLocaleString('es-ES')} Kcal</p>
-                        </div>
-                    </div>
-                )}
-                
-                {sortedDayKeys.map(dayName => {
+              <div className="p-4 sm:p-6">
+                <div className="space-y-6">
+                  {!isToday && session.totalCalories > 0 && (
+                      <div className="bg-gray-800/60 border border-white/10 rounded-lg p-4 flex items-center justify-center gap-4 text-center text-white">
+                          <Flame className="w-8 h-8 text-orange-400 flex-shrink-0" />
+                          <div>
+                              <p className="text-base font-semibold text-gray-300">Quemaste un total de</p>
+                              <p className="text-2xl font-bold">{session.totalCalories.toLocaleString('es-ES')} Kcal</p>
+                          </div>
+                      </div>
+                  )}
+                  
+                  <div className={`grid transition-[grid-template-rows] duration-500 ease-in-out ${!isSessionCollapsed ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+                    <div className="overflow-hidden">
+                      <div className="space-y-6 pt-2">
+                        {sortedDayKeys.map(dayName => {
                   const dayInfo = dayConfig[dayName];
                   const dayLogs = logsByDay[dayName];
                   if (!dayInfo || dayLogs.length === 0) return null;
@@ -444,6 +453,10 @@ const Summary: React.FC = () => {
                     </div>
                   );
                 })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )

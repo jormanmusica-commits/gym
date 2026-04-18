@@ -124,6 +124,7 @@ export interface SedeData {
   summaryCollapsedWeeks: string[];
   summaryCollapsedDays: string[];
   summaryCollapsedExercises: string[];
+  summaryCollapsedSessions: string[];
   consejos: ConsejoItem[];
   weightHistory: WeightEntry[];
 }

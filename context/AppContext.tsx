@@ -56,9 +56,11 @@ interface AppContextType {
   summaryCollapsedWeeks: string[];
   summaryCollapsedDays: string[];
   summaryCollapsedExercises: string[];
+  summaryCollapsedSessions: string[];
   toggleSummaryWeekCollapse: (weekKey: string) => void;
   toggleSummaryDayCollapse: (dayKey: string) => void;
   toggleSummaryExerciseCollapse: (exerciseId: string) => void;
+  toggleSummarySessionCollapse: (sessionDate: string) => void;
 
 
   toggleExerciseLogExpansion: (dayName: string, logId: string, forceState?: 'open' | 'close') => void;
@@ -183,6 +185,7 @@ const createInitialSedeData = (): SedeData => {
     summaryCollapsedWeeks: [],
     summaryCollapsedDays: [],
     summaryCollapsedExercises: [],
+    summaryCollapsedSessions: [],
     consejos: [],
     weightHistory: [],
   };
@@ -364,6 +367,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             if (sede.summaryCollapsedWeeks === undefined) sede.summaryCollapsedWeeks = [];
             if (sede.summaryCollapsedDays === undefined) sede.summaryCollapsedDays = [];
             if (sede.summaryCollapsedExercises === undefined) sede.summaryCollapsedExercises = [];
+            if (sede.summaryCollapsedSessions === undefined) sede.summaryCollapsedSessions = [];
             delete (sede as any).summaryExpandedWeeks;
             delete (sede as any).summaryExpandedDays;
             delete (sede as any).summaryExpandedExercises;
@@ -906,6 +910,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             ? currentCollapsed.filter(id => id !== exerciseId)
             : [...currentCollapsed, exerciseId];
         return { ...sedeData, summaryCollapsedExercises: newCollapsed };
+    });
+  };
+
+  const toggleSummarySessionCollapse = (sessionDate: string) => {
+    updateSedeData(sedeData => {
+        const currentCollapsed = sedeData.summaryCollapsedSessions || [];
+        const newCollapsed = currentCollapsed.includes(sessionDate)
+            ? currentCollapsed.filter(d => d !== sessionDate)
+            : [...currentCollapsed, sessionDate];
+        return { ...sedeData, summaryCollapsedSessions: newCollapsed };
     });
   };
 
@@ -1643,9 +1657,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     summaryCollapsedWeeks: activeSedeData?.summaryCollapsedWeeks || [],
     summaryCollapsedDays: activeSedeData?.summaryCollapsedDays || [],
     summaryCollapsedExercises: activeSedeData?.summaryCollapsedExercises || [],
+    summaryCollapsedSessions: activeSedeData?.summaryCollapsedSessions || [],
     toggleSummaryWeekCollapse,
     toggleSummaryDayCollapse,
     toggleSummaryExerciseCollapse,
+    toggleSummarySessionCollapse,
     toggleExerciseLogExpansion,
     muscleGroupLinks: activeSedeData?.muscleGroupLinks || {},
     addMuscleGroupLink,
