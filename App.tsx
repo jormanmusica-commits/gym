@@ -313,16 +313,19 @@ const DailySummaryLogItem: React.FC<{ log: ExerciseLog; allLogs: ExerciseLog[] }
             </div>
             {hasMetrics && (
                 <div className="mt-4 pt-4 border-t border-gray-700/50 grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-3 text-sm">
-                    {/* Centered Date and Sede Relocation */}
-                    <div className="col-span-full flex flex-wrap justify-center items-center gap-2 mb-2">
-                        <div className="flex items-center gap-2 bg-white/5 px-4 py-1.5 rounded-full border border-white/5">
-                            <CalendarDays className="w-4 h-4 text-cyan-400" />
-                            <span className="text-gray-300 font-semibold">{formatFullDisplayDate(log.date)}</span>
+                    {/* Centered Date and Sede Relocation - Integrated single pill */}
+                    <div className="col-span-full flex justify-center mb-1">
+                        <div className="flex items-center gap-3 bg-white/5 pl-4 pr-1.5 py-1 rounded-full border border-white/5">
+                            <div className="flex items-center gap-2">
+                                <CalendarDays className="w-4 h-4 text-cyan-400" />
+                                <span className="text-gray-300 font-semibold">{formatFullDisplayDate(log.date)}</span>
+                            </div>
+                            <div className="h-4 w-px bg-white/10 mx-1"></div>
+                            <span className={`${getSedeColor(log.sede)} text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 font-mono uppercase tracking-wider`}>
+                                <MapPin className="w-3 h-3"/>
+                                {log.sede}
+                            </span>
                         </div>
-                        <span className={`${getSedeColor(log.sede)} text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1 font-mono uppercase tracking-wider`}>
-                            <MapPin className="w-3 h-3"/>
-                            {log.sede}
-                        </span>
                     </div>
                     {isNadaTab && <MetricItem label="Tiempo" value={log.tiempo!} unit="Min" Icon={Clock} comparison={comparisons.tiempo} />}
                     <MetricItem label={isNadaTab ? 'Velocidad' : 'Series'} value={log.series!} unit={isNadaTab ? 'Km/h' : ''} Icon={isNadaTab ? Zap : BarChart4} comparison={comparisons.series} />

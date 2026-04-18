@@ -308,16 +308,19 @@ const Summary: React.FC = () => {
             <div className="flex justify-between items-start gap-4">
                 <button onClick={(e) => { e.stopPropagation(); setSelectedItemForCard(log); }} className="min-w-0 flex-grow flex justify-center items-center rounded-lg hover:bg-white/5 p-2 -m-2 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-500/50" aria-label="Ver tarjeta de métricas">
                   <div className="flex justify-center flex-wrap gap-x-4 gap-y-3 text-sm pb-2">
-                    {/* Centered Date and Sede Relocation */}
-                    <div className="w-full flex flex-wrap justify-center items-center gap-2 mb-2">
-                        <div className="flex items-center gap-2 bg-white/5 px-4 py-1.5 rounded-full border border-white/5">
-                            <CalendarDays className="w-4 h-4 text-cyan-400" />
-                            <span className="text-gray-300 font-semibold">{formatFullDisplayDate(log.date)}</span>
+                    {/* Centered Date and Sede Relocation - Integrated single pill */}
+                    <div className="w-full flex justify-center mb-1">
+                        <div className="flex items-center gap-3 bg-white/5 pl-4 pr-1.5 py-1 rounded-full border border-white/5">
+                            <div className="flex items-center gap-2">
+                                <CalendarDays className="w-4 h-4 text-cyan-400" />
+                                <span className="text-gray-300 font-semibold">{formatFullDisplayDate(log.date)}</span>
+                            </div>
+                            <div className="h-4 w-px bg-white/10 mx-1"></div>
+                            <span className={`${getSedeColor(log.sede)} text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 font-mono uppercase tracking-wider`}>
+                                <MapPin className="w-3 h-3"/>
+                                {log.sede}
+                            </span>
                         </div>
-                        <span className={`${getSedeColor(log.sede)} text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1 font-mono uppercase tracking-wider`}>
-                            <MapPin className="w-3 h-3"/>
-                            {log.sede}
-                        </span>
                     </div>
                     {isNadaTab ? (<><MetricItem label="Tiempo" value={log.tiempo} unit="Min" Icon={Clock} comparison={comparisons.tiempo} /><MetricItem label="Velocidad" value={log.series} unit="Km/h" Icon={Zap} comparison={comparisons.series} /><MetricItem label="Distancia" value={log.reps} unit={log.distanceUnit ? (log.distanceUnit === 'KM' ? 'Km' : 'm') : ''} Icon={Gauge} comparison={comparisons.reps} /><MetricItem label="Calorías" value={log.calorias} unit="Kcal" Icon={Flame} comparison={comparisons.calorias} /><MetricItem label="Inclinación" value={log.kilos} unit="%" Icon={TrendingUp} comparison={comparisons.kilos} /></>) : 
                     (<><MetricItem label="Series" value={log.series} unit="" Icon={BarChart4} comparison={comparisons.series} /><MetricItem label="Reps" value={log.reps} unit="" Icon={Repeat} comparison={comparisons.reps} /><MetricItem label="Kilos" value={log.kilos} unit="kgs" Icon={Weight} comparison={comparisons.kilos} /><MetricItem label="Tiempo" value={log.tiempo} unit="Min" Icon={Clock} comparison={comparisons.tiempo} /><MetricItem label="Calorías" value={log.calorias} unit="Kcal" Icon={Flame} comparison={comparisons.calorias} /></>)}

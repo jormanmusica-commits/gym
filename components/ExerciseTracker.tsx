@@ -689,16 +689,19 @@ const DailyLogCard: React.FC<DailyLogCardProps> = ({
                                 <div className="flex justify-between items-start gap-4">
                                     <div className="min-w-0 flex-grow flex justify-center items-center">
                                         <div className="flex justify-center flex-wrap gap-x-4 gap-y-3 text-sm">
-                                          {/* Date and Sede relocated here as requested */}
-                                          <div className="w-full flex flex-wrap justify-center items-center gap-2 mb-2">
-                                              <div className="flex items-center gap-2 bg-white/5 px-4 py-1.5 rounded-full border border-white/5">
-                                                  <CalendarDays className="w-4 h-4 text-cyan-400" />
-                                                  <span className="text-gray-300 font-semibold">{formatFullDisplayDate(log.date)}</span>
+                                          {/* Date and Sede relocated here as requested - Integrated single pill */}
+                                          <div className="w-full flex justify-center mb-1">
+                                              <div className="flex items-center gap-3 bg-white/5 pl-4 pr-1.5 py-1 rounded-full border border-white/5">
+                                                  <div className="flex items-center gap-2">
+                                                      <CalendarDays className="w-4 h-4 text-cyan-400" />
+                                                      <span className="text-gray-300 font-semibold">{formatFullDisplayDate(log.date)}</span>
+                                                  </div>
+                                                  <div className="h-4 w-px bg-white/10 mx-1"></div>
+                                                  <span className={`${getSedeColor(log.sede)} text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center justify-center gap-1 font-mono uppercase tracking-wider`}>
+                                                      <MapPin className="w-3 h-3"/>
+                                                      {log.sede}
+                                                  </span>
                                               </div>
-                                              <span className={`${getSedeColor(log.sede)} text-[10px] font-bold px-2 py-1 rounded-full flex items-center justify-center gap-1 font-mono uppercase tracking-wider`}>
-                                                  <MapPin className="w-3 h-3"/>
-                                                  {log.sede}
-                                              </span>
                                           </div>
                                           {isNadaTab ? (
                                               <>
