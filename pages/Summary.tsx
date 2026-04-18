@@ -301,23 +301,20 @@ const Summary: React.FC = () => {
     return (
       <div className="py-3 sm:py-4">
         <div className="relative flex items-center justify-center gap-4">
-          <div className="flex-grow min-w-0 px-10">
-            <div className="flex flex-col items-center text-center mb-4">
-                <h4 className="font-bold text-white text-lg truncate w-full uppercase tracking-tight">{log.exerciseName}</h4>
-            </div>
+          <div className="flex-grow min-w-0 pl-2 pr-14">
             <div className="flex justify-between items-start gap-4">
                 <button onClick={(e) => { e.stopPropagation(); setSelectedItemForCard(log); }} className="min-w-0 flex-grow flex justify-center items-center rounded-lg hover:bg-white/5 p-2 -m-2 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-500/50" aria-label="Ver tarjeta de métricas">
                   <div className="flex justify-center flex-wrap gap-x-4 gap-y-3 text-sm pb-2">
-                    {/* Centered Date and Sede Relocation - Integrated single pill - EXPANDED */}
-                    <div className="w-full flex justify-center mb-1">
-                        <div className="flex items-center justify-between w-full bg-white/5 pl-4 pr-2 py-1.5 rounded-full border border-white/10">
-                            <div className="flex items-center gap-2">
-                                <CalendarDays className="w-4 h-4 text-cyan-400" />
-                                <span className="text-gray-300 font-bold text-sm">{formatFullDisplayDate(log.date)}</span>
+                    {/* Centered Date and Sede Relocation - Integrated single pill - EXPANDED TO LIMIT */}
+                    <div className="w-full mb-1">
+                        <div className="flex items-center justify-between w-full bg-white/5 pl-4 pr-2 py-1.5 rounded-full border border-white/10 shadow-lg shadow-black/20">
+                            <div className="flex items-center gap-2 overflow-hidden">
+                                <CalendarDays className="w-4 h-4 text-cyan-400 flex-shrink-0" />
+                                <span className="text-gray-300 font-bold text-sm whitespace-nowrap">{formatFullDisplayDate(log.date)}</span>
                             </div>
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-3 flex-shrink-0">
                                 <div className="h-4 w-px bg-white/10"></div>
-                                <span className={`${getSedeColor(log.sede)} text-[10px] font-black px-3 py-1 rounded-full flex items-center gap-1 font-mono uppercase tracking-widest`}>
+                                <span className={`${getSedeColor(log.sede)} text-[10px] font-black px-3 py-1.5 rounded-full flex items-center gap-1 font-mono uppercase tracking-widest leading-none`}>
                                     <MapPin className="w-3 h-3"/>
                                     {log.sede}
                                 </span>

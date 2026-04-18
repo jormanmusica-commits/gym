@@ -328,18 +328,18 @@ const CardioTracker: React.FC<{ dayName: string; }> = ({ dayName }) => {
           {isSaved ? (
             <div className="animate-fadeIn">
               <div className="relative flex items-center justify-center min-h-[40px] mb-2">
-                <div className="flex-grow text-center px-16">
+                <div className="flex-grow text-center px-10">
                   <div className="flex flex-col items-center">
-                    <div className="w-full flex justify-center mb-1">
-                        <div className="flex items-center justify-between w-full bg-white/5 pl-4 pr-2 py-1.5 rounded-full border border-white/10">
-                            <div className="flex items-center gap-2">
-                                <CalendarDays className="w-4 h-4 text-cyan-400" />
-                                <span className="text-gray-300 font-bold text-sm">{formatDisplayDate(date)}</span>
+                    <div className="w-full mb-1">
+                        <div className="flex items-center justify-between w-full bg-white/5 pl-4 pr-2 py-1.5 rounded-full border border-white/10 shadow-lg shadow-black/20">
+                            <div className="flex items-center gap-2 overflow-hidden">
+                                <CalendarDays className="w-4 h-4 text-cyan-400 flex-shrink-0" />
+                                <span className="text-gray-300 font-bold text-sm whitespace-nowrap">{formatDisplayDate(date)}</span>
                             </div>
                             {activeSede && (
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-3 flex-shrink-0">
                                     <div className="h-4 w-px bg-white/10"></div>
-                                    <span className={`${getSedeColor(activeSede)} text-[10px] font-black px-3 py-1 rounded-full flex items-center gap-1 font-mono uppercase tracking-widest`}>
+                                    <span className={`${getSedeColor(activeSede)} text-[10px] font-black px-3 py-1.5 rounded-full flex items-center gap-1 font-mono uppercase tracking-widest leading-none`}>
                                         <MapPin className="w-3 h-3"/>
                                         {activeSede}
                                     </span>

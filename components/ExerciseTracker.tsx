@@ -663,7 +663,7 @@ const DailyLogCard: React.FC<DailyLogCardProps> = ({
             {/* HEADER */}
             <div className="p-3 sm:p-4 cursor-pointer" onClick={onToggleExpand}>
                 <div className="relative flex items-center justify-center min-h-[40px]">
-                    <div className="flex-grow text-center px-16">
+                    <div className="flex-grow text-center px-10">
                         <p className="font-bold text-white truncate text-lg w-full">{log.exerciseName || 'Sin nombre'}</p>
                     </div>
                     <div className="absolute right-0 flex items-center gap-1 sm:gap-2">
@@ -691,16 +691,16 @@ const DailyLogCard: React.FC<DailyLogCardProps> = ({
                                 <div className="flex justify-between items-start gap-4">
                                     <div className="min-w-0 flex-grow flex justify-center items-center">
                                         <div className="flex justify-center flex-wrap gap-x-4 gap-y-3 text-sm">
-                                          {/* Date and Sede relocated here as requested - Integrated single pill - EXPANDED */}
-                                          <div className="w-full flex justify-center mb-1">
-                                              <div className="flex items-center justify-between w-full bg-white/5 pl-4 pr-2 py-1.5 rounded-full border border-white/10">
-                                                  <div className="flex items-center gap-2">
-                                                      <CalendarDays className="w-4 h-4 text-cyan-400" />
-                                                      <span className="text-gray-300 font-bold text-sm">{formatFullDisplayDate(log.date)}</span>
+                                          {/* Date and Sede relocated here as requested - Integrated single pill - EXPANDED TO LIMIT */}
+                                          <div className="w-full mb-1">
+                                              <div className="flex items-center justify-between w-full bg-white/5 pl-4 pr-2 py-1.5 rounded-full border border-white/10 shadow-lg shadow-black/20">
+                                                  <div className="flex items-center gap-2 overflow-hidden">
+                                                      <CalendarDays className="w-4 h-4 text-cyan-400 flex-shrink-0" />
+                                                      <span className="text-gray-300 font-bold text-sm whitespace-nowrap">{formatFullDisplayDate(log.date)}</span>
                                                   </div>
-                                                  <div className="flex items-center gap-3">
+                                                  <div className="flex items-center gap-3 flex-shrink-0">
                                                       <div className="h-4 w-px bg-white/10"></div>
-                                                      <span className={`${getSedeColor(log.sede)} text-[10px] font-black px-3 py-1 rounded-full flex items-center justify-center gap-1 font-mono uppercase tracking-widest`}>
+                                                      <span className={`${getSedeColor(log.sede)} text-[10px] font-black px-3 py-1.5 rounded-full flex items-center justify-center gap-1 font-mono uppercase tracking-widest leading-none`}>
                                                           <MapPin className="w-3 h-3"/>
                                                           {log.sede}
                                                       </span>
