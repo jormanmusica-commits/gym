@@ -119,6 +119,43 @@ const ConsejosPage: React.FC = () => {
     // States for the modal form
     const [formData, setFormData] = useState(createInitialConsejoData());
 
+    const { 
+        addMuscleGroupLink, addStretchingLink, addPostureLink 
+    } = useAppContext();
+
+    const handlePasteMuscleLink = async (dayKey: string, muscleName: string) => {
+        try {
+            const text = await navigator.clipboard.readText();
+            if (text.trim()) {
+                addMuscleGroupLink(dayKey, muscleName, text.trim());
+            }
+        } catch (err) {
+            console.error('Failed to read clipboard contents: ', err);
+        }
+    };
+
+    const handlePasteStretchingLink = async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+            if (text.trim()) {
+                addStretchingLink(text.trim());
+            }
+        } catch (err) {
+            console.error('Failed to read clipboard contents: ', err);
+        }
+    };
+
+    const handlePastePostureLink = async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+            if (text.trim()) {
+                addPostureLink(text.trim());
+            }
+        } catch (err) {
+            console.error('Failed to read clipboard contents: ', err);
+        }
+    };
+
     useEffect(() => {
       if (isModalOpen) {
           setFormData(editingConsejo || createInitialConsejoData());
@@ -387,10 +424,6 @@ const ConsejosPage: React.FC = () => {
                     <div className="space-y-6">
                         {Object.entries(dayConfig).map(([dayKey, config]) => {
                             const muscleLinks = muscleGroupLinks[dayKey] || {};
-                            const hasLinks = Object.values(muscleLinks).some(links => links.length > 0);
-                            
-                            if (!hasLinks) return null;
-
                             const Icon = config.icon;
 
                             return (
@@ -403,25 +436,39 @@ const ConsejosPage: React.FC = () => {
                                     </div>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        {Object.entries(muscleLinks).map(([muscleName, links]) => {
-                                            if (links.length === 0) return null;
+                                        {config.groups.map((muscleName) => {
+                                            const links = muscleLinks[muscleName] || [];
 
                                             return (
                                                 <div key={muscleName} className="bg-gray-800/40 p-3 rounded-lg border border-white/5">
-                                                    <h4 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-widest">{muscleName}</h4>
-                                                    <ul className="space-y-2">
-                                                        {links.map((link) => (
-                                                            <li key={link.id}>
-                                                                <button
-                                                                    onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')}
-                                                                    className="w-full bg-cyan-600/20 hover:bg-cyan-600/40 text-cyan-300 text-sm font-semibold py-2 px-3 rounded-md border border-cyan-500/30 transition-all duration-300 text-left truncate flex items-center justify-between group"
-                                                                >
-                                                                    <span>{link.name}</span>
-                                                                    <Video className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" />
-                                                                </button>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest leading-none">{muscleName}</h4>
+                                                        <button 
+                                                            onClick={() => handlePasteMuscleLink(dayKey, muscleName)}
+                                                            className="p-1 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 rounded-md transition-colors border border-orange-500/20"
+                                                            title={`Pegar video para ${muscleName}`}
+                                                        >
+                                                            <Plus className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                    
+                                                    {links.length > 0 ? (
+                                                        <ul className="space-y-2">
+                                                            {links.map((link) => (
+                                                                <li key={link.id}>
+                                                                    <button
+                                                                        onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')}
+                                                                        className="w-full bg-cyan-600/20 hover:bg-cyan-600/40 text-cyan-300 text-sm font-semibold py-2 px-3 rounded-md border border-cyan-500/30 transition-all duration-300 text-left truncate flex items-center justify-between group"
+                                                                    >
+                                                                        <span>{link.name}</span>
+                                                                        <Video className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" />
+                                                                    </button>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    ) : (
+                                                        <p className="text-xs text-gray-600 italic mt-1">Sin videos aún</p>
+                                                    )}
                                                 </div>
                                             );
                                         })}
@@ -443,52 +490,72 @@ const ConsejosPage: React.FC = () => {
                         )}
 
                         {/* Stretching and Posture Section */}
-                        {(stretchingLinks.length > 0 || postureLinks.length > 0) && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6 pt-6 border-t border-white/10">
-                                {stretchingLinks.length > 0 && (
-                                    <div className="bg-black/20 rounded-xl border border-white/10 p-4">
-                                        <h3 className="font-bold text-lg text-white mb-4 uppercase tracking-tight flex items-center gap-2">
-                                            <Video className="w-5 h-5 text-green-400" />
-                                            Estiramientos
-                                        </h3>
-                                        <ul className="space-y-2">
-                                            {stretchingLinks.map(link => (
-                                                <li key={link.id}>
-                                                    <button
-                                                        onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')}
-                                                        className="w-full bg-green-600/10 hover:bg-green-600/20 text-green-300 text-sm font-semibold py-2 px-3 rounded-md border border-green-500/20 transition-all duration-300 text-left truncate flex items-center justify-between group"
-                                                    >
-                                                        <span>{link.name}</span>
-                                                        <Video className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" />
-                                                    </button>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-                                {postureLinks.length > 0 && (
-                                    <div className="bg-black/20 rounded-xl border border-white/10 p-4">
-                                        <h3 className="font-bold text-lg text-white mb-4 uppercase tracking-tight flex items-center gap-2">
-                                            <Video className="w-5 h-5 text-purple-400" />
-                                            Posturas
-                                        </h3>
-                                        <ul className="space-y-2">
-                                            {postureLinks.map(link => (
-                                                <li key={link.id}>
-                                                    <button
-                                                        onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')}
-                                                        className="w-full bg-purple-600/10 hover:bg-purple-600/20 text-purple-300 text-sm font-semibold py-2 px-3 rounded-md border border-purple-500/20 transition-all duration-300 text-left truncate flex items-center justify-between group"
-                                                    >
-                                                        <span>{link.name}</span>
-                                                        <Video className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" />
-                                                    </button>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6 pt-6 border-t border-white/10">
+                            <div className="bg-black/20 rounded-xl border border-white/10 p-4">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="font-bold text-lg text-white uppercase tracking-tight flex items-center gap-2">
+                                        <Video className="w-5 h-5 text-green-400" />
+                                        Estiramientos
+                                    </h3>
+                                    <button 
+                                        onClick={handlePasteStretchingLink}
+                                        className="p-1 bg-green-500/10 hover:bg-green-500/20 text-green-400 rounded-md transition-colors border border-green-500/20"
+                                        title="Pegar video de estiramiento"
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                    </button>
+                                </div>
+                                {stretchingLinks.length > 0 ? (
+                                    <ul className="space-y-2">
+                                        {stretchingLinks.map(link => (
+                                            <li key={link.id}>
+                                                <button
+                                                    onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')}
+                                                    className="w-full bg-green-600/10 hover:bg-green-600/20 text-green-300 text-sm font-semibold py-2 px-3 rounded-md border border-green-500/20 transition-all duration-300 text-left truncate flex items-center justify-between group"
+                                                >
+                                                    <span>{link.name}</span>
+                                                    <Video className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" />
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p className="text-xs text-gray-600 italic">Sin estiramientos aún</p>
                                 )}
                             </div>
-                        )}
+                            <div className="bg-black/20 rounded-xl border border-white/10 p-4">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="font-bold text-lg text-white uppercase tracking-tight flex items-center gap-2">
+                                        <Video className="w-5 h-5 text-purple-400" />
+                                        Posturas
+                                    </h3>
+                                    <button 
+                                        onClick={handlePastePostureLink}
+                                        className="p-1 bg-purple-500/10 hover:bg-purple-600/20 text-purple-400 rounded-md transition-colors border border-purple-500/20"
+                                        title="Pegar video de postura"
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                    </button>
+                                </div>
+                                {postureLinks.length > 0 ? (
+                                    <ul className="space-y-2">
+                                        {postureLinks.map(link => (
+                                            <li key={link.id}>
+                                                <button
+                                                    onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')}
+                                                    className="w-full bg-purple-600/10 hover:bg-purple-600/20 text-purple-300 text-sm font-semibold py-2 px-3 rounded-md border border-purple-500/20 transition-all duration-300 text-left truncate flex items-center justify-between group"
+                                                >
+                                                    <span>{link.name}</span>
+                                                    <Video className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" />
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p className="text-xs text-gray-600 italic">Sin posturas aún</p>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
