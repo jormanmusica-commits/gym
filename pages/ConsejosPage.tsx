@@ -233,7 +233,6 @@ const ConsejosPage: React.FC = () => {
 
     // Collapsible states
     const [isNotasExpanded, setIsNotasExpanded] = useState(true);
-    const [isLibraryExpanded, setIsLibraryExpanded] = useState(true);
     const [expandedDays, setExpandedDays] = useState<{ [key: string]: boolean }>({
         'Día 1': true,
         'Día 2': true,
@@ -248,7 +247,6 @@ const ConsejosPage: React.FC = () => {
     useEffect(() => {
         if (scrollTargetDay) {
             // Expand relevant sections
-            setIsLibraryExpanded(true);
             setExpandedDays(prev => ({ ...prev, [scrollTargetDay]: true }));
 
             // Wait for render/expansion and scroll
@@ -575,10 +573,18 @@ const ConsejosPage: React.FC = () => {
                     {isNotasExpanded && (
                         <div className="grid grid-cols-1 gap-4 animate-fadeIn">
                             {consejos.length === 0 ? (
-                                <div className="text-center p-12 bg-black/20 border-2 border-dashed border-white/5 rounded-3xl">
-                                    <Lightbulb className="w-16 h-16 text-gray-700 mx-auto mb-4" />
-                                    <h3 className="text-xl font-bold text-gray-400">¿Tienes algún consejo para ti?</h3>
-                                    <p className="text-gray-600 max-w-xs mx-auto mt-2">Usa el botón inferior para guardar técnicas, comidas o recordatorios.</p>
+                                <div 
+                                    onClick={() => handleOpenModal()}
+                                    className="text-center p-12 bg-black/20 border-2 border-dashed border-white/5 rounded-3xl cursor-pointer hover:bg-black/40 hover:border-cyan-500/30 transition-all group"
+                                >
+                                    <Lightbulb className="w-16 h-16 text-gray-700 mx-auto mb-4 group-hover:text-cyan-400 transition-colors" />
+                                    <h3 className="text-xl font-bold text-gray-400 group-hover:text-white transition-colors">¿Tienes algún consejo para ti?</h3>
+                                    <p className="text-gray-600 max-w-xs mx-auto mt-2">Usa el botón inferior o toca aquí para guardar técnicas, comidas o recordatorios.</p>
+                                    <div className="mt-8 flex justify-center">
+                                        <div className="w-14 h-14 bg-cyan-600/20 hover:bg-cyan-600/40 text-cyan-400 rounded-full flex items-center justify-center border border-cyan-500/30 shadow-lg shadow-cyan-600/10 group-hover:scale-110 transition-all">
+                                            <Plus className="w-8 h-8" />
+                                        </div>
+                                    </div>
                                 </div>
                             ) : (
                                 consejos.map((consejo, idx) => (
@@ -617,18 +623,8 @@ const ConsejosPage: React.FC = () => {
                 </section>
 
                 <section className="pt-10 border-t border-white/10">
-                    <button 
-                        onClick={() => setIsLibraryExpanded(!isLibraryExpanded)}
-                        className="w-full text-3xl font-black text-cyan-400 flex items-center justify-center gap-4 uppercase tracking-tighter mb-10 drop-shadow-[0_0_15px_rgba(34,211,238,0.4)] hover:brightness-110 transition-all"
-                    >
-                        <Video className="w-8 h-8" />
-                        Biblioteca de Videos
-                        {isLibraryExpanded ? <ChevronUp className="w-6 h-6 text-cyan-500/50" /> : <ChevronDown className="w-6 h-6 text-cyan-500/50" />}
-                    </button>
-
-                    {isLibraryExpanded && (
-                        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                            <div className="space-y-12 animate-fadeIn">
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                        <div className="space-y-12 animate-fadeIn">
                                 {Object.entries(dayConfig).map(([dayKey, config]) => {
                                     const muscleLinks = muscleGroupLinks[dayKey] || {};
                                     const isDayExpanded = expandedDays[dayKey];
@@ -749,7 +745,6 @@ const ConsejosPage: React.FC = () => {
                                 </div>
                             </div>
                         </DndContext>
-                    )}
                 </section>
             </div>
 
