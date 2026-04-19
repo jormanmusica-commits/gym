@@ -395,6 +395,26 @@ const ConsejosPage: React.FC = () => {
         setEditingLibLink(null);
     };
 
+    const handlePasteVideoLinkInModal = async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+            const url = extractUrl(text);
+            if (url) {
+                const newLink: LinkItem = {
+                    id: Date.now().toString(),
+                    name: 'Video ' + ((formData.videoLinks?.length || 0) + 1),
+                    url: url
+                };
+                setFormData(prev => ({
+                    ...prev,
+                    videoLinks: [...(prev.videoLinks || []), newLink]
+                }));
+            }
+        } catch (err) {
+            console.error('Clipboard error:', err);
+        }
+    };
+
     const handleSaveLinkName = () => {
       if (editingLink) {
         updateConsejoVideoLinkName(editingLink.consejoId, editingLink.linkId, editingLink.name);
