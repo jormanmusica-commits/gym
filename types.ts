@@ -102,6 +102,7 @@ export interface ConsejoItem {
   createdAt: string; // ISO string
   videoLinks?: LinkItem[];
   workoutDay?: string;
+  subcategory?: string;
 }
 
 export interface WeightEntry {

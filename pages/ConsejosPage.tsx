@@ -6,12 +6,12 @@ import type { ConsejoItem, ExerciseMedia, LinkItem } from '../types';
 import ConfirmationModal from '../components/ConfirmationModal';
 import { extractUrl } from '../lib/utils';
 
-const dayConfig: { [key: string]: { title: string; icon: React.ElementType } } = {
-    'Día 1': { title: 'Pecho y Bíceps', icon: Shirt },
-    'Día 2': { title: 'Pierna y Glúteo', icon: Footprints },
-    'Día 3': { title: 'Hombro y Espalda', icon: Shield },
-    'Día 4': { title: 'Tríceps y Antebrazo', icon: Hand },
-    'Día 5': { title: 'Combinados', icon: HeartPulse },
+const dayConfig: { [key: string]: { title: string; icon: React.ElementType, subcategories: string[] } } = {
+    'Día 1': { title: 'Pecho y Bíceps', icon: Shirt, subcategories: ['Pecho', 'Bíceps'] },
+    'Día 2': { title: 'Pierna y Glúteo', icon: Footprints, subcategories: ['Pierna', 'Glúteo'] },
+    'Día 3': { title: 'Hombro y Espalda', icon: Shield, subcategories: ['Hombro', 'Espalda'] },
+    'Día 4': { title: 'Tríceps y Antebrazo', icon: Hand, subcategories: ['Tríceps', 'Antebrazo'] },
+    'Día 5': { title: 'Combinados', icon: HeartPulse, subcategories: ['Combinados'] },
 };
 
 // Local Lightbox component (reused from other pages for consistency)
@@ -123,7 +123,9 @@ const ConsejosPage: React.FC = () => {
 
     // Collapsible states
     const [isNotasExpanded, setIsNotasExpanded] = useState(true);
+    const [expandedDay, setExpandedDay] = useState<string | null>(null);
     const [selectedInitialDay, setSelectedInitialDay] = useState<string | null>(null);
+    const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
 
     useEffect(() => {
         setTempTitle(consejosTitle);
@@ -131,16 +133,23 @@ const ConsejosPage: React.FC = () => {
 
     useEffect(() => {
         if (isModalOpen) {
-            setFormData(editingConsejo || createInitialConsejoData(selectedInitialDay ? { workoutDay: selectedInitialDay } : {}));
+            setFormData(editingConsejo || createInitialConsejoData({
+                ...(selectedInitialDay ? { workoutDay: selectedInitialDay } : {}),
+                ...(selectedSubcategory ? { subcategory: selectedSubcategory } : {})
+            }));
         } else {
             setSelectedInitialDay(null);
+            setSelectedSubcategory(null);
         }
-    }, [isModalOpen, editingConsejo, selectedInitialDay]);
+    }, [isModalOpen, editingConsejo, selectedInitialDay, selectedSubcategory]);
 
-    const handleOpenModal = (consejo: ConsejoItem | null = null, initialDay?: string) => {
+    const handleOpenModal = (consejo: ConsejoItem | null = null, initialDay?: string, subcategory?: string) => {
         setEditingConsejo(consejo);
         if (initialDay) {
             setSelectedInitialDay(initialDay);
+        }
+        if (subcategory) {
+            setSelectedSubcategory(subcategory);
         }
         setIsModalOpen(true);
     };
@@ -237,7 +246,7 @@ const ConsejosPage: React.FC = () => {
                 <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 animate-fadeIn" onClick={handleCloseModal}>
                     <div className="bg-gray-800/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-6 w-full max-w-lg m-4 animate-scaleIn flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-2xl font-black text-cyan-400 uppercase">{editingConsejo ? 'Editar Consejo' : 'Nuevo Consejo'}</h2>
+                            <h2 className="text-2xl font-black text-cyan-400 uppercase">{editingConsejo ? 'Editar Consejo' : formData.subcategory ? `Nota: ${formData.subcategory}` : 'Nueva Nota'}</h2>
                             <button onClick={handleCloseModal} className="p-2 text-gray-400 hover:text-white transition"><X className="w-6 h-6" /></button>
                         </div>
                         <div className="overflow-y-auto pr-2 space-y-6 no-scrollbar flex-grow">
@@ -343,6 +352,19 @@ const ConsejosPage: React.FC = () => {
                                     <div key={consejo.id} className="bg-gray-900/40 backdrop-blur-md border border-white/10 rounded-2xl p-6 transition-all hover:border-cyan-500/30">
                                         <div className="flex justify-between items-start gap-4 mb-4">
                                             <div className="flex-grow">
+                                                <div className="flex flex-wrap gap-2 mb-2">
+                                                    {consejo.workoutDay && dayConfig[consejo.workoutDay] && (
+                                                        <div className="flex items-center gap-1.5 bg-cyan-500/10 px-2 py-0.5 rounded-md">
+                                                            {React.createElement(dayConfig[consejo.workoutDay].icon, { className: "w-3 h-3 text-cyan-400" })}
+                                                            <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">{dayConfig[consejo.workoutDay].title}</span>
+                                                        </div>
+                                                    )}
+                                                    {consejo.subcategory && (
+                                                        <div className="flex items-center gap-1.5 bg-orange-500/10 px-2 py-0.5 rounded-md">
+                                                            <span className="text-[10px] font-bold text-orange-400 uppercase tracking-widest">{consejo.subcategory}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
                                                 {consejo.title && <h3 className="text-xl font-black text-white leading-tight">{consejo.title}</h3>}
                                             </div>
                                             <div className="flex gap-2">
@@ -379,18 +401,36 @@ const ConsejosPage: React.FC = () => {
                 <section className="mb-12">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {Object.entries(dayConfig).map(([dayKey, config]) => (
-                            <button
-                                key={dayKey}
-                                onClick={() => handleOpenModal(null, dayKey)}
-                                className="bg-gray-900/60 backdrop-blur-md border-2 border-cyan-500/50 rounded-2xl p-4 transition-all duration-300 hover:bg-cyan-500/10 active:scale-[0.98] group flex flex-col items-center justify-center gap-2"
-                            >
-                                <div className="flex items-center justify-center gap-3 text-cyan-400">
-                                    <config.icon className="w-6 h-6 transition-transform group-hover:scale-110" />
-                                    <span className="text-xl font-black uppercase tracking-tighter drop-shadow-[0_0_10px_rgba(34,211,238,0.3)]">
-                                        {config.title}
-                                    </span>
-                                </div>
-                            </button>
+                            <div key={dayKey} className="space-y-2">
+                                <button
+                                    onClick={() => setExpandedDay(expandedDay === dayKey ? null : dayKey)}
+                                    className={`w-full bg-gray-900/60 backdrop-blur-md border-2 rounded-2xl p-4 transition-all duration-300 active:scale-[0.98] group flex flex-col items-center justify-center gap-2 ${expandedDay === dayKey ? 'border-cyan-400 bg-cyan-500/5' : 'border-cyan-500/50 hover:bg-cyan-500/10'}`}
+                                >
+                                    <div className="flex items-center justify-center gap-3 text-cyan-400">
+                                        <config.icon className="w-6 h-6 transition-transform group-hover:scale-110" />
+                                        <span className="text-xl font-black uppercase tracking-tighter drop-shadow-[0_0_10px_rgba(34,211,238,0.3)]">
+                                            {config.title}
+                                        </span>
+                                        {config.subcategories.length > 0 && (
+                                            <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${expandedDay === dayKey ? 'rotate-180' : ''}`} />
+                                        )}
+                                    </div>
+                                </button>
+                                
+                                {expandedDay === dayKey && (
+                                    <div className="grid grid-cols-2 gap-2 mt-2 animate-fadeIn">
+                                        {config.subcategories.map(sub => (
+                                            <button
+                                                key={sub}
+                                                onClick={() => handleOpenModal(null, dayKey, sub)}
+                                                className="bg-black/40 border border-white/10 hover:border-cyan-500/50 hover:bg-cyan-500/10 text-cyan-400 font-bold py-2.5 rounded-xl text-sm uppercase tracking-wider transition-all"
+                                            >
+                                                {sub}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         ))}
                     </div>
                 </section>
