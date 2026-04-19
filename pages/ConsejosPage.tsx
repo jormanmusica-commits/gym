@@ -1,11 +1,29 @@
 
-
 import React, { useState, useRef, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { Lightbulb, Plus, Trash2, Camera, X, Pencil, Check, ChevronLeft, ChevronRight, ClipboardPaste, Shirt, Footprints, Shield, Hand, HeartPulse, Video } from 'lucide-react';
+import { Lightbulb, Plus, Trash2, Camera, X, Pencil, Check, ChevronLeft, ChevronRight, ClipboardPaste, Shirt, Footprints, Shield, Hand, HeartPulse, Video, GripVertical } from 'lucide-react';
 import type { ConsejoItem, ExerciseMedia, LinkItem } from '../types';
 import ConfirmationModal from '../components/ConfirmationModal';
 import { extractUrl } from '../lib/utils';
+import { 
+    DndContext, 
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    type DragStartEvent,
+    type DragEndEvent,
+    UniqueIdentifier
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+    useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 // Local Lightbox component (reused from other pages for consistency)
 interface MediaLightboxProps {
@@ -85,7 +103,6 @@ const MediaLightbox: React.FC<MediaLightboxProps> = ({ allMedia, startIndex, onC
     );
 };
 
-
 const createInitialConsejoData = (): Omit<ConsejoItem, 'id' | 'createdAt'> => ({
     title: '',
     content: '',
@@ -101,69 +118,186 @@ const dayConfig: { [key: string]: { title: string; groups: string[]; icon: React
     'Día 5': { title: 'Combinados', groups: ['General'], icon: HeartPulse },
 };
 
+const SortableVideoLink: React.FC<{
+    link: LinkItem;
+    type: 'muscle' | 'stretching' | 'posture';
+    day?: string;
+    muscle?: string;
+    onEdit: () => void;
+    onDelete: () => void;
+}> = ({ link, type, day, muscle, onEdit, onDelete }) => {
+    const uniqueId = `${type}|${day || ''}|${muscle || ''}|${link.id}`;
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging
+    } = useSortable({ id: uniqueId });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.3 : 1,
+        zIndex: isDragging ? 50 : 0
+    };
+
+    const bgColor = type === 'muscle' ? 'bg-cyan-600/10 hover:bg-cyan-600/20' : 
+                   type === 'stretching' ? 'bg-green-600/5 hover:bg-green-600/10' : 
+                   'bg-purple-600/5 hover:bg-purple-600/10';
+    
+    const borderColor = type === 'muscle' ? 'border-cyan-500/20' : 
+                       type === 'stretching' ? 'border-green-500/10' : 
+                       'border-purple-500/10';
+
+    const textColor = type === 'muscle' ? 'text-cyan-300' : 
+                     type === 'stretching' ? 'text-green-300' : 
+                     'text-purple-300';
+
+    return (
+        <div 
+            ref={setNodeRef} 
+            style={style} 
+            className="flex items-center gap-1 group relative"
+        >
+            <div 
+                {...attributes} 
+                {...listeners} 
+                className="cursor-grab active:cursor-grabbing p-1.5 text-gray-500 hover:text-gray-300 transition-colors"
+                title="Mantén presionado para mover"
+            >
+                <GripVertical className="w-3.5 h-3.5" />
+            </div>
+            
+            <div className={`flex-grow flex items-center justify-between ${bgColor} ${borderColor} border rounded-md transition-all duration-300 overflow-hidden`}>
+                <button
+                    onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')}
+                    className={`flex-grow text-left truncate py-2 px-3 text-xs font-semibold ${textColor}`}
+                    title="Abrir video"
+                >
+                    {link.name}
+                </button>
+                
+                <div className="flex items-center h-full opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 px-1">
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); onEdit(); }}
+                        className="p-1.5 text-gray-300 hover:text-cyan-400 transition-colors"
+                        title="Renombrar"
+                    >
+                        <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); onDelete(); }}
+                        className="p-1.5 text-gray-300 hover:text-red-400 transition-colors"
+                        title="Eliminar"
+                    >
+                        <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const ConsejosPage: React.FC = () => {
     const { 
         consejos, addConsejo, updateConsejo, removeConsejo, removeConsejoMedia, 
         addConsejoVideoLink, removeConsejoVideoLink, updateConsejoVideoLinkName,
-        muscleGroupLinks, stretchingLinks, postureLinks
+        muscleGroupLinks, stretchingLinks, postureLinks,
+        addMuscleGroupLink, addStretchingLink, addPostureLink,
+        removeMuscleGroupLink, updateMuscleGroupLinkName,
+        removeStretchingLink, updateStretchingLinkName,
+        removePostureLink, updatePostureLinkName,
+        reorderMuscleGroupLinks, reorderStretchingLinks, reorderPostureLinks, 
+        moveMuscleGroupLink,
+        moveStretchingToMuscleGroup, movePostureToMuscleGroup,
+        moveMuscleGroupToStretching, moveMuscleGroupToPosture
     } = useAppContext();
+    
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingConsejo, setEditingConsejo] = useState<ConsejoItem | null>(null);
     const [consejoToDelete, setConsejoToDelete] = useState<ConsejoItem | null>(null);
     const [lightboxMedia, setLightboxMedia] = useState<{ allMedia: ExerciseMedia[]; startIndex: number; consejoId: string; } | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [formData, setFormData] = useState(createInitialConsejoData());
     
-    // States for video links on main cards
+    // States for video links on main cards (Consejos)
     const [editingLink, setEditingLink] = useState<{ consejoId: string; linkId: string; name: string } | null>(null);
     const [linkToDelete, setLinkToDelete] = useState<{ consejoId: string; linkId: string; name: string } | null>(null);
 
-    // States for the modal form
-    const [formData, setFormData] = useState(createInitialConsejoData());
+    // States for Library Links
+    const [editingLibLink, setEditingLibLink] = useState<{ type: 'muscle' | 'stretching' | 'posture'; id: string; name: string; day?: string; muscle?: string } | null>(null);
+    const [libLinkToDelete, setLibLinkToDelete] = useState<{ type: 'muscle' | 'stretching' | 'posture'; id: string; name: string; day?: string; muscle?: string } | null>(null);
 
-    const { 
-        addMuscleGroupLink, addStretchingLink, addPostureLink 
-    } = useAppContext();
+    // Drag and Drop State and Sensors
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                delay: 250, // Long press simulation
+                tolerance: 5,
+            },
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
 
-    const handlePasteMuscleLink = async (dayKey: string, muscleName: string) => {
-        try {
-            const text = await navigator.clipboard.readText();
-            const linkUrl = extractUrl(text);
-            if (linkUrl) {
-                addMuscleGroupLink(dayKey, muscleName, linkUrl);
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (!over) return;
+
+        const activeId = active.id.toString();
+        const overId = over.id.toString();
+
+        if (activeId === overId) return;
+
+        const [activeType, activeDay, activeGroup, activeLinkId] = activeId.split('|');
+        const [overType, overDay, overGroup, overLinkId] = overId.split('|');
+
+        // Handle Reordering within same container
+        if (activeType === overType && activeDay === overDay && activeGroup === overGroup) {
+            if (activeType === 'muscle') {
+                const links = muscleGroupLinks[activeDay]?.[activeGroup] || [];
+                const oldIndex = links.findIndex(l => l.id === activeLinkId);
+                const newIndex = links.findIndex(l => l.id === overLinkId);
+                if (oldIndex !== -1 && newIndex !== -1) {
+                    reorderMuscleGroupLinks(activeDay, activeGroup, arrayMove(links, oldIndex, newIndex));
+                }
+            } else if (activeType === 'stretching') {
+                const oldIndex = stretchingLinks.findIndex(l => l.id === activeLinkId);
+                const newIndex = stretchingLinks.findIndex(l => l.id === overLinkId);
+                if (oldIndex !== -1 && newIndex !== -1) {
+                    reorderStretchingLinks(arrayMove(stretchingLinks, oldIndex, newIndex));
+                }
+            } else if (activeType === 'posture') {
+                const oldIndex = postureLinks.findIndex(l => l.id === activeLinkId);
+                const newIndex = postureLinks.findIndex(l => l.id === overLinkId);
+                if (oldIndex !== -1 && newIndex !== -1) {
+                    reorderPostureLinks(arrayMove(postureLinks, oldIndex, newIndex));
+                }
             }
-        } catch (err) {
-            console.error('Failed to read clipboard contents: ', err);
+            return;
         }
-    };
 
-    const handlePasteStretchingLink = async () => {
-        try {
-            const text = await navigator.clipboard.readText();
-            const linkUrl = extractUrl(text);
-            if (linkUrl) {
-                addStretchingLink(linkUrl);
-            }
-        } catch (err) {
-            console.error('Failed to read clipboard contents: ', err);
-        }
-    };
-
-    const handlePastePostureLink = async () => {
-        try {
-            const text = await navigator.clipboard.readText();
-            const linkUrl = extractUrl(text);
-            if (linkUrl) {
-                addPostureLink(linkUrl);
-            }
-        } catch (err) {
-            console.error('Failed to read clipboard contents: ', err);
+        // Handle Moving between containers
+        if (activeType === 'muscle' && overType === 'muscle') {
+            moveMuscleGroupLink(activeDay, activeGroup, overDay, overGroup, activeLinkId);
+        } else if (activeType === 'stretching' && overType === 'muscle') {
+            moveStretchingToMuscleGroup(activeLinkId, overDay, overGroup);
+        } else if (activeType === 'posture' && overType === 'muscle') {
+            movePostureToMuscleGroup(activeLinkId, overDay, overGroup);
+        } else if (activeType === 'muscle' && overType === 'stretching') {
+            moveMuscleGroupToStretching(activeDay, activeGroup, activeLinkId);
+        } else if (activeType === 'muscle' && overType === 'posture') {
+            moveMuscleGroupToPosture(activeDay, activeGroup, activeLinkId);
         }
     };
 
     useEffect(() => {
-      if (isModalOpen) {
-          setFormData(editingConsejo || createInitialConsejoData());
-      }
+        if (isModalOpen) {
+            setFormData(editingConsejo || createInitialConsejoData());
+        }
     }, [isModalOpen, editingConsejo]);
 
     const handleOpenModal = (consejo: ConsejoItem | null = null) => {
@@ -199,6 +333,33 @@ const ConsejosPage: React.FC = () => {
       }
     };
 
+    const handleConfirmLibLinkDelete = () => {
+        if (!libLinkToDelete) return;
+        if (libLinkToDelete.type === 'muscle' && libLinkToDelete.day && libLinkToDelete.muscle) {
+            removeMuscleGroupLink(libLinkToDelete.day, libLinkToDelete.muscle, libLinkToDelete.id);
+        } else if (libLinkToDelete.type === 'stretching') {
+            removeStretchingLink(libLinkToDelete.id);
+        } else if (libLinkToDelete.type === 'posture') {
+            removePostureLink(libLinkToDelete.id);
+        }
+        setLibLinkToDelete(null);
+    };
+
+    const handleSaveLibLinkName = () => {
+        if (!editingLibLink || !editingLibLink.name.trim()) {
+            setEditingLibLink(null);
+            return;
+        }
+        if (editingLibLink.type === 'muscle' && editingLibLink.day && editingLibLink.muscle) {
+            updateMuscleGroupLinkName(editingLibLink.day, editingLibLink.muscle, editingLibLink.id, editingLibLink.name.trim());
+        } else if (editingLibLink.type === 'stretching') {
+            updateStretchingLinkName(editingLibLink.id, editingLibLink.name.trim());
+        } else if (editingLibLink.type === 'posture') {
+            updatePostureLinkName(editingLibLink.id, editingLibLink.name.trim());
+        }
+        setEditingLibLink(null);
+    };
+
     const handleSaveLinkName = () => {
       if (editingLink) {
         updateConsejoVideoLinkName(editingLink.consejoId, editingLink.linkId, editingLink.name);
@@ -208,7 +369,7 @@ const ConsejosPage: React.FC = () => {
 
     const handleDeleteMediaFromConsejo = (consejoId: string, mediaIndex: number) => {
         removeConsejoMedia(consejoId, mediaIndex);
-        setLightboxMedia(null); // Close lightbox after deletion
+        setLightboxMedia(null);
     };
     
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -218,359 +379,283 @@ const ConsejosPage: React.FC = () => {
             reader.onload = (e) => {
                 const dataUrl = e.target?.result as string;
                 const mediaType = file.type.startsWith('image') ? 'image' : 'video';
-                const newMedia: ExerciseMedia = { type: mediaType, dataUrl };
-                
-                setFormData(prev => ({...prev, media: [...prev.media, newMedia] }));
+                setFormData(prev => ({...prev, media: [...prev.media, { type: mediaType, dataUrl }] }));
             };
             reader.readAsDataURL(file);
         }
         if(event.target) event.target.value = '';
     };
-    
+
+    const handlePasteMuscleLink = async (dayKey: string, muscleName: string) => {
+        try {
+            const text = await navigator.clipboard.readText();
+            const url = extractUrl(text);
+            if (url) addMuscleGroupLink(dayKey, muscleName, url);
+        } catch (err) { console.error('Clipboard error:', err); }
+    };
+
+    const handlePasteStretchingLink = async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+            const url = extractUrl(text);
+            if (url) addStretchingLink(url);
+        } catch (err) { console.error('Clipboard error:', err); }
+    };
+
+    const handlePastePostureLink = async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+            const url = extractUrl(text);
+            if (url) addPostureLink(url);
+        } catch (err) { console.error('Clipboard error:', err); }
+    };
+
     const handlePasteVideoLinkInModal = async () => {
       try {
         const text = await navigator.clipboard.readText();
         const linkUrl = extractUrl(text);
         if (linkUrl) {
             const currentLinks = formData.videoLinks || [];
-            if (currentLinks.some(l => l.url === linkUrl)) {
-              return;
-            }
-            const newLink: LinkItem = { id: crypto.randomUUID(), url: linkUrl, name: `Video ${currentLinks.length + 1}` };
+            if (currentLinks.some(l => l.url === linkUrl)) return;
+            const newLink = { id: crypto.randomUUID(), url: linkUrl, name: `Video ${currentLinks.length + 1}` };
             setFormData(prev => ({ ...prev, videoLinks: [...currentLinks, newLink] }));
         }
-      } catch (err) {
-        console.error('Failed to read clipboard contents: ', err);
-      }
+      } catch (err) { console.error('Clipboard error:', err); }
     };
 
-    const inputClasses = "w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 transition duration-200 focus:outline-none focus:border-transparent focus:ring-2 focus:ring-cyan-500/70";
-
     return (
-        <div className="space-y-4 pb-24">
+        <div className="min-h-screen bg-[#0a0a0c] text-white p-4 pb-24 relative safe-area-inset-top">
             <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*,video/*" />
             
-            {lightboxMedia && <MediaLightbox 
-                allMedia={lightboxMedia.allMedia}
-                startIndex={lightboxMedia.startIndex}
-                onClose={() => setLightboxMedia(null)}
-                onDelete={(indexToDelete) => handleDeleteMediaFromConsejo(lightboxMedia.consejoId, indexToDelete)}
-            />}
+            {lightboxMedia && (
+                <MediaLightbox 
+                    allMedia={lightboxMedia.allMedia}
+                    startIndex={lightboxMedia.startIndex}
+                    onClose={() => setLightboxMedia(null)}
+                    onDelete={(index) => handleDeleteMediaFromConsejo(lightboxMedia.consejoId, index)}
+                />
+            )}
 
-            <ConfirmationModal 
-                isOpen={!!consejoToDelete} 
-                onClose={() => setConsejoToDelete(null)} 
-                onConfirm={handleConfirmDelete} 
-                title="Eliminar Consejo" 
-                message={`¿Seguro que quieres eliminar la nota "${consejoToDelete?.title || 'sin título'}"?`}
-            />
+            <ConfirmationModal isOpen={!!consejoToDelete} onClose={() => setConsejoToDelete(null)} onConfirm={handleConfirmDelete} title="Eliminar Consejo" message={`¿Seguro que quieres eliminar "${consejoToDelete?.title || 'esta nota'}"?`} />
+            <ConfirmationModal isOpen={!!linkToDelete} onClose={() => setLinkToDelete(null)} onConfirm={handleConfirmLinkDelete} title="Eliminar Video" message={`¿Deseas eliminar este video?`} />
+            <ConfirmationModal isOpen={!!libLinkToDelete} onClose={() => setLibLinkToDelete(null)} onConfirm={handleConfirmLibLinkDelete} title="Eliminar de Biblioteca" message={`¿Eliminar "${libLinkToDelete?.name}"?`} />
 
-            <ConfirmationModal
-              isOpen={!!linkToDelete}
-              onClose={() => setLinkToDelete(null)}
-              onConfirm={handleConfirmLinkDelete}
-              title="Eliminar Video"
-              message={`¿Estás seguro de que quieres eliminar el video "${linkToDelete?.name}"?`}
-            />
-            
-            {/* Modal for Add/Edit */}
-            {isModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 animate-fadeIn" onClick={handleCloseModal}>
-                    <div className="bg-gray-800/80 backdrop-blur-xl border border-white/10 rounded-lg shadow-xl p-6 w-full max-w-lg m-4 animate-scaleIn flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
-                        <div className="flex justify-between items-center mb-4 flex-shrink-0">
-                            <h2 className="text-xl font-bold text-cyan-400">{editingConsejo ? 'Editar Consejo' : 'Nuevo Consejo'}</h2>
-                            <button onClick={handleCloseModal} className="p-2 text-gray-400 hover:text-white transition"><X className="w-6 h-6" /></button>
-                        </div>
-                        <div className="overflow-y-auto pr-2 space-y-4 no-scrollbar">
-                            <input type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="Título de la nota" className={`${inputClasses} font-bold text-lg`} />
-                            
-                            <div>
-                              <h3 className="text-sm font-semibold text-gray-400 mb-2">Links de Video</h3>
-                               <div className="flex flex-col gap-2">
-                                  {(formData.videoLinks || []).map((link, index) => (
-                                      <div key={link.id} className="relative group w-full bg-cyan-600 text-white font-semibold text-sm rounded-lg flex items-center overflow-hidden">
-                                          <button 
-                                            onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')}
-                                            className="flex-grow py-2 px-4 text-left truncate hover:bg-white/10 transition-colors"
-                                            title="Abrir link"
-                                          >
-                                            {link.name}
-                                          </button>
-                                          <button 
-                                            onClick={() => setFormData({...formData, videoLinks: (formData.videoLinks || []).filter(l => l.id !== link.id)})} 
-                                            className="px-3 py-2 text-white/70 hover:text-white hover:bg-red-500 transition-colors"
-                                            title="Eliminar link"
-                                          >
-                                            <X className="w-5 h-5" />
-                                          </button>
-                                      </div>
-                                  ))}
-                                  <button onClick={handlePasteVideoLinkInModal} className="w-full bg-gray-700/50 border-2 border-dashed border-gray-600 rounded-lg flex items-center justify-center text-gray-400 hover:text-orange-400 hover:border-orange-500 transition-colors py-3 px-3 gap-2 text-base font-semibold">
-                                      <ClipboardPaste className="w-5 h-5"/> Pegar Link
-                                  </button>
-                              </div>
-                            </div>
-
-                            <textarea value={formData.content} onChange={e => setFormData({...formData, content: e.target.value})} placeholder="Escribe tu consejo o nota aquí..." className={`${inputClasses} h-40 resize-none`} />
-                            
-                            <div>
-                              <h3 className="text-sm font-semibold text-gray-400 mb-2">Imágenes / Videos</h3>
-                              <div className="flex flex-wrap gap-2">
-                                  {formData.media.map((mediaItem, index) => (
-                                      <div key={index} className="relative w-20 h-20 group">
-                                          {mediaItem.type === 'image' ? <img src={mediaItem.dataUrl} className="rounded-lg object-cover w-full h-full" alt="" /> : <video src={mediaItem.dataUrl} muted loop playsInline className="rounded-lg object-cover w-full h-full" />}
-                                          <button onClick={() => setFormData({...formData, media: formData.media.filter((_, i) => i !== index)})} className="absolute -top-1.5 -right-1.5 bg-red-600 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-3 h-3" /></button>
-                                      </div>
-                                  ))}
-                                  <button onClick={() => fileInputRef.current?.click()} className="w-20 h-20 bg-gray-700/50 border-2 border-dashed border-gray-600 rounded-lg flex items-center justify-center text-gray-400 hover:text-cyan-400 hover:border-cyan-500 transition-colors">
-                                      <Camera className="w-8 h-8"/>
-                                  </button>
-                              </div>
-                            </div>
-                        </div>
-                        <div className="mt-6 flex justify-end gap-4 flex-shrink-0">
-                            <button onClick={handleCloseModal} className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-md transition">Cancelar</button>
-                            <button onClick={handleSave} className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-6 rounded-md transition">Guardar</button>
+            {editingLibLink && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fadeIn">
+                    <div className="bg-gray-900 border border-white/10 rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-scaleIn">
+                        <h3 className="text-xl font-bold text-white mb-4 uppercase tracking-tight">Renombrar Video</h3>
+                        <input
+                            type="text"
+                            value={editingLibLink.name}
+                            onChange={(e) => setEditingLibLink({ ...editingLibLink, name: e.target.value })}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSaveLibLinkName()}
+                            className="w-full bg-gray-800 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 mb-6"
+                            placeholder="Nuevo nombre..."
+                            autoFocus
+                        />
+                        <div className="grid grid-cols-2 gap-3">
+                            <button onClick={() => setEditingLibLink(null)} className="bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-xl transition-all">Cancelar</button>
+                            <button onClick={handleSaveLibLinkName} className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-4 rounded-xl transition-all">Guardar</button>
                         </div>
                     </div>
                 </div>
             )}
-            
-            {/* Main Content */}
-            <div className="space-y-6">
-                <div className="bg-gray-900/60 backdrop-blur-md border border-white/10 rounded-2xl p-4 sm:p-6">
-                    <h1 className="text-xl font-extrabold text-cyan-400 flex items-center justify-center gap-3 uppercase tracking-wider mb-6">
-                        <Lightbulb className="w-7 h-7" />
-                        Consejos y Notas
+
+            {isModalOpen && (
+                <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 animate-fadeIn" onClick={handleCloseModal}>
+                    <div className="bg-gray-800/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-6 w-full max-w-lg m-4 animate-scaleIn flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-black text-cyan-400 uppercase">{editingConsejo ? 'Editar Consejo' : 'Nuevo Consejo'}</h2>
+                            <button onClick={handleCloseModal} className="p-2 text-gray-400 hover:text-white transition"><X className="w-6 h-6" /></button>
+                        </div>
+                        <div className="overflow-y-auto pr-2 space-y-6 no-scrollbar flex-grow">
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Título</label>
+                                <input type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="Título de la nota..." className="w-full bg-black/40 border border-white/10 rounded-xl py-3 px-4 text-white focus:ring-2 focus:ring-cyan-500/50 outline-none font-bold text-lg" />
+                            </div>
+                            
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Videos de Referencia</label>
+                                <div className="space-y-2">
+                                    {(formData.videoLinks || []).map((link) => (
+                                        <div key={link.id} className="bg-cyan-600/20 border border-cyan-500/30 rounded-xl flex items-center overflow-hidden">
+                                            <button onClick={() => window.open(link.url, '_blank')} className="flex-grow py-3 px-4 text-left truncate text-cyan-300 font-bold text-sm tracking-tight">{link.name}</button>
+                                            <button onClick={() => setFormData({...formData, videoLinks: (formData.videoLinks || []).filter(l => l.id !== link.id)})} className="p-3 text-cyan-400 hover:text-red-400 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                        </div>
+                                    ))}
+                                    <button onClick={handlePasteVideoLinkInModal} className="w-full bg-gray-700/30 border-2 border-dashed border-gray-600/50 rounded-xl flex items-center justify-center text-gray-400 hover:text-orange-400 hover:border-orange-500/50 transition-all py-4 gap-2 text-sm font-bold uppercase tracking-widest">
+                                        <ClipboardPaste className="w-5 h-5"/> Pegar Link
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Contenido</label>
+                                <textarea value={formData.content} onChange={e => setFormData({...formData, content: e.target.value})} placeholder="Escribe aquí..." className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-4 text-white focus:ring-2 focus:ring-cyan-500/50 outline-none h-44 resize-none leading-relaxed" />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Multimedia</label>
+                                <div className="flex flex-wrap gap-3">
+                                    {formData.media.map((media, idx) => (
+                                        <div key={idx} className="relative w-24 h-24 group">
+                                            {media.type === 'image' ? <img src={media.dataUrl} className="rounded-xl object-cover w-full h-full border border-white/10" alt="" /> : <video src={media.dataUrl} muted className="rounded-xl object-cover w-full h-full border border-white/10" />}
+                                            <button onClick={() => setFormData({...formData, media: formData.media.filter((_, i) => i !== idx)})} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1.5 shadow-lg transform hover:scale-110 transition"><X className="w-3.5 h-3.5" /></button>
+                                        </div>
+                                    ))}
+                                    <button onClick={() => fileInputRef.current?.click()} className="w-24 h-24 bg-gray-700/30 border-2 border-dashed border-gray-600/50 rounded-xl flex items-center justify-center text-gray-400 hover:text-cyan-400 hover:border-cyan-500/50 transition-all"><Camera className="w-8 h-8"/></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="mt-8 flex gap-3 flex-shrink-0">
+                            <button onClick={handleCloseModal} className="flex-grow bg-gray-700 hover:bg-gray-600 text-white font-bold py-4 rounded-xl transition-all">Cerrar</button>
+                            <button onClick={handleSave} className="flex-grow bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-cyan-600/20 transition-all">Guardar Consejo</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <div className="max-w-4xl mx-auto space-y-10">
+                <section className="space-y-6">
+                    <h1 className="text-3xl font-black text-cyan-400 flex items-center justify-center gap-4 uppercase tracking-tighter drop-shadow-[0_0_15px_rgba(34,211,238,0.4)]">
+                        <Lightbulb className="w-8 h-8" />
+                        Notas Personales
                     </h1>
-                    
-                    <div className="space-y-4">
+                    <div className="grid grid-cols-1 gap-4">
                         {consejos.length === 0 ? (
-                             <div className="text-center p-8 border-2 border-dashed border-gray-600/50 rounded-lg animate-fadeIn">
-                                <Lightbulb className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-                                <h3 className="text-lg font-semibold text-white">Tu bloc de notas personal</h3>
-                                <p className="text-gray-400 mt-1">Añade tus primeros consejos, notas o recordatorios usando el botón `+`.</p>
-                             </div>
+                            <div className="text-center p-12 bg-black/20 border-2 border-dashed border-white/5 rounded-3xl">
+                                <Lightbulb className="w-16 h-16 text-gray-700 mx-auto mb-4" />
+                                <h3 className="text-xl font-bold text-gray-400">¿Tienes algún consejo para ti?</h3>
+                                <p className="text-gray-600 max-w-xs mx-auto mt-2">Usa el botón inferior para guardar técnicas, comidas o recordatorios.</p>
+                            </div>
                         ) : (
-                            consejos.map((consejo, index) => (
-                                <div key={consejo.id} style={{ animationDelay: `${index * 50}ms` }} className="bg-black/20 rounded-xl border border-white/10 p-4 animate-zoomInPop opacity-0">
-                                    <div className="flex justify-between items-start gap-4">
-                                        <h3 className="font-bold text-lg text-white">{consejo.title || "Nota sin título"}</h3>
-                                        <div className="flex-shrink-0 flex items-center gap-1">
-                                            <button onClick={() => handleOpenModal(consejo)} className="p-2 text-gray-400 hover:text-cyan-400 transition rounded-full hover:bg-cyan-500/10" aria-label="Editar consejo"><Pencil className="w-5 h-5"/></button>
-                                            <button onClick={() => setConsejoToDelete(consejo)} className="p-2 text-gray-400 hover:text-red-500 transition rounded-full hover:bg-red-500/10" aria-label="Eliminar consejo"><Trash2 className="w-5 h-5" /></button>
+                            consejos.map((consejo, idx) => (
+                                <div key={consejo.id} className="bg-gray-900/40 backdrop-blur-md border border-white/10 rounded-2xl p-6 transition-all hover:border-cyan-500/30">
+                                    <div className="flex justify-between items-start gap-4 mb-4">
+                                        <h3 className="text-xl font-black text-white leading-tight">{consejo.title || "Sin título"}</h3>
+                                        <div className="flex gap-2">
+                                            <button onClick={() => handleOpenModal(consejo)} className="p-2.5 bg-cyan-500/10 text-cyan-400 rounded-xl hover:bg-cyan-500/20 transition"><Pencil className="w-5 h-5"/></button>
+                                            <button onClick={() => setConsejoToDelete(consejo)} className="p-2.5 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 transition"><Trash2 className="w-5 h-5"/></button>
                                         </div>
                                     </div>
-                                    {consejo.content && <p className="text-gray-300 mt-2 whitespace-pre-wrap">{consejo.content}</p>}
-                                    {consejo.media.length > 0 && (
-                                        <div className="flex flex-wrap gap-2 mt-4">
-                                            {consejo.media.map((mediaItem, index) => (
-                                                <button key={index} onClick={() => setLightboxMedia({ allMedia: consejo.media, startIndex: index, consejoId: consejo.id})} className="relative w-24 h-24 group rounded-lg overflow-hidden">
-                                                    {mediaItem.type === 'image' ? (
-                                                        <img src={mediaItem.dataUrl} alt={`Media ${index + 1}`} className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105" />
-                                                    ) : (
-                                                        <video src={mediaItem.dataUrl} muted loop playsInline className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105" />
-                                                    )}
+                                    {consejo.content && <p className="text-gray-300 leading-relaxed whitespace-pre-wrap">{consejo.content}</p>}
+                                    {consejo.videoLinks && consejo.videoLinks.length > 0 && (
+                                        <div className="mt-6 flex flex-wrap gap-2">
+                                            {consejo.videoLinks.map(link => (
+                                                <button key={link.id} onClick={() => window.open(link.url, '_blank')} className="bg-cyan-600/10 border border-cyan-500/20 rounded-full px-4 py-1.5 text-xs font-bold text-cyan-300 hover:bg-cyan-600/20 transition-all flex items-center gap-2">
+                                                    <Video className="w-3.5 h-3.5" /> {link.name}
                                                 </button>
                                             ))}
                                         </div>
                                     )}
-                                    {(consejo.videoLinks || []).length > 0 && (
-                                      <div className="mt-4 pt-4 border-t border-gray-700/50">
-                                          <h4 className="text-sm font-semibold text-gray-400 mb-2">Videos de Referencia</h4>
-                                          <ul className="space-y-2">
-                                            {(consejo.videoLinks || []).map(link => (
-                                              <li key={link.id} className="bg-gray-700/50 rounded-md">
-                                                {editingLink?.linkId === link.id ? (
-                                                  <div className="flex items-center p-2 gap-2">
-                                                    <input
-                                                      type="text"
-                                                      value={editingLink.name}
-                                                      onChange={(e) => setEditingLink({ ...editingLink, name: e.target.value })}
-                                                      onKeyDown={(e) => e.key === 'Enter' && handleSaveLinkName()}
-                                                      onBlur={handleSaveLinkName}
-                                                      className="flex-grow bg-gray-600 text-white font-bold py-2 px-4 rounded-md focus:ring-2 focus:ring-cyan-500 focus:outline-none"
-                                                      autoFocus
-                                                    />
-                                                    <button onClick={handleSaveLinkName} className="text-green-400 hover:text-green-300 p-1"><Check className="w-5 h-5"/></button>
-                                                    <button onClick={() => setEditingLink(null)} className="text-gray-400 hover:text-white p-1"><X className="w-5 h-5"/></button>
-                                                  </div>
-                                                ) : (
-                                                  <div className="relative group">
-                                                    <button
-                                                      onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')}
-                                                      className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:brightness-110 text-white font-bold py-2 px-4 rounded-md transition-all duration-300 text-center truncate"
-                                                    >
-                                                      {link.name}
-                                                    </button>
-                                                    <button onClick={(e) => { e.stopPropagation(); setEditingLink({ consejoId: consejo.id, linkId: link.id, name: link.name })}} className="absolute top-1/2 -translate-y-1/2 left-2 text-white hover:text-cyan-400 transition p-1.5 bg-black/40 rounded-full opacity-0 group-hover:opacity-100" aria-label={`Editar nombre de ${link.name}`}><Pencil className="w-4 h-4" /></button>
-                                                    <button onClick={(e) => { e.stopPropagation(); setLinkToDelete({ consejoId: consejo.id, linkId: link.id, name: link.name }) }} className="absolute top-1/2 -translate-y-1/2 right-2 text-white hover:text-red-500 transition p-1.5 bg-black/40 rounded-full opacity-0 group-hover:opacity-100" aria-label={`Eliminar ${link.name}`}><Trash2 className="w-4 h-4" /></button>
-                                                  </div>
-                                                )}
-                                              </li>
+                                    {consejo.media.length > 0 && (
+                                        <div className="mt-6 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                                            {consejo.media.map((m, i) => (
+                                                <button key={i} onClick={() => setLightboxMedia({ allMedia: consejo.media, startIndex: i, consejoId: consejo.id})} className="aspect-square bg-black/40 rounded-xl overflow-hidden border border-white/5">
+                                                    {m.type === 'image' ? <img src={m.dataUrl} className="w-full h-full object-cover" alt="" /> : <video src={m.dataUrl} className="w-full h-full object-cover" />}
+                                                </button>
                                             ))}
-                                          </ul>
-                                      </div>
+                                        </div>
                                     )}
                                 </div>
                             ))
                         )}
                     </div>
-                </div>
+                </section>
 
-                {/* Video Library Section */}
-                <div className="bg-gray-900/60 backdrop-blur-md border border-white/10 rounded-2xl p-4 sm:p-6">
-                    <h2 className="text-xl font-extrabold text-cyan-400 flex items-center justify-center gap-3 uppercase tracking-wider mb-6">
-                        <Video className="w-7 h-7" />
+                <section className="pt-10 border-t border-white/10">
+                    <h2 className="text-3xl font-black text-cyan-400 flex items-center justify-center gap-4 uppercase tracking-tighter mb-10 drop-shadow-[0_0_15px_rgba(34,211,238,0.4)]">
+                        <Video className="w-8 h-8" />
                         Biblioteca de Videos
                     </h2>
 
-                    <div className="space-y-6">
-                        {Object.entries(dayConfig).map(([dayKey, config]) => {
-                            const muscleLinks = muscleGroupLinks[dayKey] || {};
-                            const Icon = config.icon;
-
-                            return (
-                                <div key={dayKey} className="bg-black/20 rounded-xl border border-white/10 p-4">
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <div className="p-2 bg-cyan-500/10 rounded-lg">
-                                            <Icon className="w-6 h-6 text-cyan-400" />
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                        <div className="space-y-12">
+                            {Object.entries(dayConfig).map(([dayKey, config]) => {
+                                const muscleLinks = muscleGroupLinks[dayKey] || {};
+                                return (
+                                    <div key={dayKey} className="space-y-6">
+                                        <div className="flex items-center gap-4">
+                                            <div className="h-0.5 flex-grow bg-gradient-to-r from-transparent to-white/10"></div>
+                                            <div className="flex items-center gap-2 px-6 py-2 bg-white/5 rounded-full border border-white/10">
+                                                <config.icon className="w-5 h-5 text-cyan-400" />
+                                                <span className="text-lg font-black uppercase tracking-widest text-white">{config.title}</span>
+                                            </div>
+                                            <div className="h-0.5 flex-grow bg-gradient-to-l from-transparent to-white/10"></div>
                                         </div>
-                                        <h3 className="font-bold text-lg text-white uppercase tracking-tight">{config.title}</h3>
-                                    </div>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        {config.groups.map((muscleName) => {
-                                            const links = muscleLinks[muscleName] || [];
-
-                                            return (
-                                                <div key={muscleName} className="bg-gray-800/40 p-3 rounded-lg border border-white/5">
-                                                    <div className="flex justify-between items-center mb-2">
-                                                        <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest leading-none">{muscleName}</h4>
-                                                        <button 
-                                                            onClick={() => handlePasteMuscleLink(dayKey, muscleName)}
-                                                            className="p-1 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 rounded-md transition-colors border border-orange-500/20"
-                                                            title={`Pegar video para ${muscleName}`}
-                                                        >
-                                                            <Plus className="w-4 h-4" />
-                                                        </button>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                            {config.groups.map((muscle) => {
+                                                const links = muscleLinks[muscle] || [];
+                                                return (
+                                                    <div key={muscle} className="bg-gray-900/30 border border-white/5 rounded-3xl p-5 flex flex-col h-full">
+                                                        <div className="flex justify-between items-center mb-4">
+                                                            <h4 className="text-sm font-black text-gray-500 uppercase tracking-[0.2em]">{muscle}</h4>
+                                                            <button onClick={() => handlePasteMuscleLink(dayKey, muscle)} className="w-8 h-8 flex items-center justify-center bg-orange-500/10 text-orange-400 rounded-lg border border-orange-500/20 hover:bg-orange-500/20 transition-colors">
+                                                                <Plus className="w-4 h-4" />
+                                                            </button>
+                                                        </div>
+                                                        <div className="flex-grow">
+                                                            <SortableContext id={`${dayKey}-${muscle}`} items={links.map(l => `muscle|${dayKey}|${muscle}|${l.id}`)} strategy={verticalListSortingStrategy}>
+                                                                <div className="space-y-2 min-h-[40px]">
+                                                                    {links.length > 0 ? links.map(link => (
+                                                                        <SortableVideoLink 
+                                                                            key={link.id} 
+                                                                            link={link} 
+                                                                            type="muscle" 
+                                                                            day={dayKey} 
+                                                                            muscle={muscle} 
+                                                                            onEdit={() => setEditingLibLink({ type: 'muscle', id: link.id, name: link.name, day: dayKey, muscle })}
+                                                                            onDelete={() => setLibLinkToDelete({ type: 'muscle', id: link.id, name: link.name, day: dayKey, muscle })}
+                                                                        />
+                                                                    )) : <div className="text-[10px] text-gray-700 italic text-center py-4 border border-dashed border-white/5 rounded-xl">Arrastra videos aquí o pega uno nuevo</div>}
+                                                                </div>
+                                                            </SortableContext>
+                                                        </div>
                                                     </div>
-                                                    
-                                                    {links.length > 0 ? (
-                                                        <ul className="space-y-2">
-                                                            {links.map((link) => (
-                                                                <li key={link.id}>
-                                                                    <button
-                                                                        onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')}
-                                                                        className="w-full bg-cyan-600/20 hover:bg-cyan-600/40 text-cyan-300 text-sm font-semibold py-2 px-3 rounded-md border border-cyan-500/30 transition-all duration-300 text-left truncate flex items-center justify-between group"
-                                                                    >
-                                                                        <span>{link.name}</span>
-                                                                        <Video className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" />
-                                                                    </button>
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    ) : (
-                                                        <p className="text-xs text-gray-600 italic mt-1">Sin videos aún</p>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
+                                                );
+                                            })}
+                                        </div>
                                     </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
 
-                        {/* If no videos at all */}
-                        {(!Object.entries(dayConfig).some(([dayKey]) => {
-                             const muscleLinks = muscleGroupLinks[dayKey] || {};
-                             return Object.values(muscleLinks).some(links => links.length > 0);
-                        }) && stretchingLinks.length === 0 && postureLinks.length === 0) && (
-                            <div className="text-center p-8 border-2 border-dashed border-gray-600/50 rounded-lg">
-                                <Video className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-                                <h3 className="text-base font-semibold text-gray-300">No hay videos guardados</h3>
-                                <p className="text-sm text-gray-500 mt-1">Los videos que pegues en tus rutinas aparecerán aquí automáticamente.</p>
-                            </div>
-                        )}
-
-                        {/* Stretching and Posture Section */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6 pt-6 border-t border-white/10">
-                            <div className="bg-black/20 rounded-xl border border-white/10 p-4">
-                                <div className="flex justify-between items-center mb-4">
-                                    <h3 className="font-bold text-lg text-white uppercase tracking-tight flex items-center gap-2">
-                                        <Video className="w-5 h-5 text-green-400" />
-                                        Estiramientos
-                                    </h3>
-                                    <button 
-                                        onClick={handlePasteStretchingLink}
-                                        className="p-1 bg-green-500/10 hover:bg-green-500/20 text-green-400 rounded-md transition-colors border border-green-500/20"
-                                        title="Pegar video de estiramiento"
-                                    >
-                                        <Plus className="w-4 h-4" />
-                                    </button>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12 pt-12 border-t border-white/10">
+                                <div className="bg-gray-900/30 border border-white/5 rounded-[2.5rem] p-8">
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h3 className="text-xl font-black text-green-400 uppercase tracking-tight flex items-center gap-3"><Video className="w-6 h-6"/> Estiramientos</h3>
+                                        <button onClick={handlePasteStretchingLink} className="p-2 bg-green-500/10 text-green-400 rounded-xl border border-green-500/20 hover:bg-green-500/20 transition-colors"><Plus className="w-5 h-5"/></button>
+                                    </div>
+                                    <SortableContext id="stretching" items={stretchingLinks.map(l => `stretching|||${l.id}`)} strategy={verticalListSortingStrategy}>
+                                        <div className="space-y-2 min-h-[40px]">
+                                            {stretchingLinks.map(link => (
+                                                <SortableVideoLink key={link.id} link={link} type="stretching" onEdit={() => setEditingLibLink({ type: 'stretching', id: link.id, name: link.name })} onDelete={() => setLibLinkToDelete({ type: 'stretching', id: link.id, name: link.name })} />
+                                            ))}
+                                            {stretchingLinks.length === 0 && <div className="text-[10px] text-gray-700 italic text-center py-6 border border-dashed border-white/5 rounded-2xl">Sin estiramientos</div>}
+                                        </div>
+                                    </SortableContext>
                                 </div>
-                                {stretchingLinks.length > 0 ? (
-                                    <ul className="space-y-2">
-                                        {stretchingLinks.map(link => (
-                                            <li key={link.id}>
-                                                <button
-                                                    onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')}
-                                                    className="w-full bg-green-600/10 hover:bg-green-600/20 text-green-300 text-sm font-semibold py-2 px-3 rounded-md border border-green-500/20 transition-all duration-300 text-left truncate flex items-center justify-between group"
-                                                >
-                                                    <span>{link.name}</span>
-                                                    <Video className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" />
-                                                </button>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <p className="text-xs text-gray-600 italic">Sin estiramientos aún</p>
-                                )}
-                            </div>
-                            <div className="bg-black/20 rounded-xl border border-white/10 p-4">
-                                <div className="flex justify-between items-center mb-4">
-                                    <h3 className="font-bold text-lg text-white uppercase tracking-tight flex items-center gap-2">
-                                        <Video className="w-5 h-5 text-purple-400" />
-                                        Posturas
-                                    </h3>
-                                    <button 
-                                        onClick={handlePastePostureLink}
-                                        className="p-1 bg-purple-500/10 hover:bg-purple-600/20 text-purple-400 rounded-md transition-colors border border-purple-500/20"
-                                        title="Pegar video de postura"
-                                    >
-                                        <Plus className="w-4 h-4" />
-                                    </button>
+                                <div className="bg-gray-900/30 border border-white/5 rounded-[2.5rem] p-8">
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h3 className="text-xl font-black text-purple-400 uppercase tracking-tight flex items-center gap-3"><Video className="w-6 h-6"/> Posturas</h3>
+                                        <button onClick={handlePastePostureLink} className="p-2 bg-purple-500/10 text-purple-400 rounded-xl border border-purple-500/20 hover:bg-purple-600/20 transition-colors"><Plus className="w-5 h-5"/></button>
+                                    </div>
+                                    <SortableContext id="posture" items={postureLinks.map(l => `posture|||${l.id}`)} strategy={verticalListSortingStrategy}>
+                                        <div className="space-y-2 min-h-[40px]">
+                                            {postureLinks.map(link => (
+                                                <SortableVideoLink key={link.id} link={link} type="posture" onEdit={() => setEditingLibLink({ type: 'posture', id: link.id, name: link.name })} onDelete={() => setLibLinkToDelete({ type: 'posture', id: link.id, name: link.name })} />
+                                            ))}
+                                            {postureLinks.length === 0 && <div className="text-[10px] text-gray-700 italic text-center py-6 border border-dashed border-white/5 rounded-2xl">Sin posturas</div>}
+                                        </div>
+                                    </SortableContext>
                                 </div>
-                                {postureLinks.length > 0 ? (
-                                    <ul className="space-y-2">
-                                        {postureLinks.map(link => (
-                                            <li key={link.id}>
-                                                <button
-                                                    onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')}
-                                                    className="w-full bg-purple-600/10 hover:bg-purple-600/20 text-purple-300 text-sm font-semibold py-2 px-3 rounded-md border border-purple-500/20 transition-all duration-300 text-left truncate flex items-center justify-between group"
-                                                >
-                                                    <span>{link.name}</span>
-                                                    <Video className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" />
-                                                </button>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <p className="text-xs text-gray-600 italic">Sin posturas aún</p>
-                                )}
                             </div>
                         </div>
-                    </div>
-                </div>
+                    </DndContext>
+                </section>
             </div>
 
-            <button
-                onClick={() => handleOpenModal()}
-                className="fixed bottom-6 right-6 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded-full shadow-lg shadow-cyan-500/30 transition-all duration-300 transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-cyan-500/50 w-16 h-16 flex items-center justify-center z-20"
-                aria-label="Añadir nuevo consejo"
-            >
-                <Plus className="w-8 h-8" />
-            </button>
+            <button onClick={() => handleOpenModal()} className="fixed bottom-8 right-8 bg-cyan-600 hover:bg-cyan-500 text-white w-16 h-16 rounded-full shadow-2xl shadow-cyan-600/30 flex items-center justify-center transform transition active:scale-95 z-30"><Plus className="w-9 h-9" /></button>
         </div>
     );
 };

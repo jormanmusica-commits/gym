@@ -79,6 +79,14 @@ interface AppContextType {
   addPostureLink: (link: string) => void;
   removePostureLink: (id: string) => void;
   updatePostureLinkName: (id: string, name: string) => void;
+  moveMuscleGroupLink: (sourceDay: string, sourceMuscle: string, targetDay: string, targetMuscle: string, linkId: string) => void;
+  reorderMuscleGroupLinks: (dayName: string, muscle: string, newLinks: LinkItem[]) => void;
+  reorderStretchingLinks: (newLinks: LinkItem[]) => void;
+  reorderPostureLinks: (newLinks: LinkItem[]) => void;
+  moveStretchingToMuscleGroup: (linkId: string, targetDay: string, targetMuscle: string) => void;
+  movePostureToMuscleGroup: (linkId: string, targetDay: string, targetMuscle: string) => void;
+  moveMuscleGroupToStretching: (dayName: string, muscle: string, linkId: string) => void;
+  moveMuscleGroupToPosture: (dayName: string, muscle: string, linkId: string) => void;
   exportData: () => void;
   importData: (jsonString: string) => void;
   exportSummaryData: () => void;
@@ -1026,6 +1034,207 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     updateSedeData(sedeData => ({ ...sedeData, postureLinks: sedeData.postureLinks.map(link => (link.id === id ? { ...link, name } : link)) }));
   };
 
+  const reorderMuscleGroupLinks = (dayName: string, muscle: string, newLinks: LinkItem[]) => {
+    updateMuscleGroupLinks(prev => ({
+      ...prev,
+      [dayName]: { ...prev[dayName], [muscle]: newLinks }
+    }));
+  };
+
+  const reorderStretchingLinks = (newLinks: LinkItem[]) => {
+    updateSedeData(sedeData => ({ ...sedeData, stretchingLinks: newLinks }));
+  };
+
+  const reorderPostureLinks = (newLinks: LinkItem[]) => {
+    updateSedeData(sedeData => ({ ...sedeData, postureLinks: newLinks }));
+  };
+
+  const moveMuscleGroupLink = (sourceDay: string, sourceMuscle: string, targetDay: string, targetMuscle: string, linkId: string) => {
+    setAppState(prev => {
+      if (!prev.activeSede) return prev;
+      const currentSedeData = prev.sedes[prev.activeSede];
+      const sourceLinks = currentSedeData.muscleGroupLinks[sourceDay]?.[sourceMuscle] || [];
+      const linkToMove = sourceLinks.find(l => l.id === linkId);
+      
+      if (!linkToMove) return prev;
+
+      const newSourceLinks = sourceLinks.filter(l => l.id !== linkId);
+      const targetLinks = currentSedeData.muscleGroupLinks[targetDay]?.[targetMuscle] || [];
+      
+      // Prevent duplicates in target
+      if (targetLinks.some(l => l.url === linkToMove.url)) {
+        return {
+          ...prev,
+          sedes: {
+            ...prev.sedes,
+            [prev.activeSede]: {
+              ...currentSedeData,
+              muscleGroupLinks: {
+                ...currentSedeData.muscleGroupLinks,
+                [sourceDay]: { ...currentSedeData.muscleGroupLinks[sourceDay], [sourceMuscle]: newSourceLinks }
+              }
+            }
+          }
+        };
+      }
+
+      return {
+        ...prev,
+        sedes: {
+          ...prev.sedes,
+          [prev.activeSede]: {
+            ...currentSedeData,
+            muscleGroupLinks: {
+              ...currentSedeData.muscleGroupLinks,
+              [sourceDay]: { ...currentSedeData.muscleGroupLinks[sourceDay], [sourceMuscle]: newSourceLinks },
+              [targetDay]: { ...currentSedeData.muscleGroupLinks[targetDay], [targetMuscle]: [...targetLinks, linkToMove] }
+            }
+          }
+        }
+      };
+    });
+  };
+
+  const moveStretchingToMuscleGroup = (linkId: string, targetDay: string, targetMuscle: string) => {
+    setAppState(prev => {
+      if (!prev.activeSede) return prev;
+      const sede = prev.sedes[prev.activeSede];
+      const link = sede.stretchingLinks.find(l => l.id === linkId);
+      if (!link) return prev;
+
+      const newStretching = sede.stretchingLinks.filter(l => l.id !== linkId);
+      const targetLinks = sede.muscleGroupLinks[targetDay]?.[targetMuscle] || [];
+      
+      if (targetLinks.some(l => l.url === link.url)) {
+         return { ...prev, sedes: { ...prev.sedes, [prev.activeSede]: { ...sede, stretchingLinks: newStretching } } };
+      }
+
+      return {
+        ...prev,
+        sedes: {
+          ...prev.sedes,
+          [prev.activeSede]: {
+            ...sede,
+            stretchingLinks: newStretching,
+            muscleGroupLinks: {
+              ...sede.muscleGroupLinks,
+              [targetDay]: { ...sede.muscleGroupLinks[targetDay], [targetMuscle]: [...targetLinks, link] }
+            }
+          }
+        }
+      };
+    });
+  };
+
+  const movePostureToMuscleGroup = (linkId: string, targetDay: string, targetMuscle: string) => {
+    setAppState(prev => {
+      if (!prev.activeSede) return prev;
+      const sede = prev.sedes[prev.activeSede];
+      const link = sede.postureLinks.find(l => l.id === linkId);
+      if (!link) return prev;
+
+      const newPostures = sede.postureLinks.filter(l => l.id !== linkId);
+      const targetLinks = sede.muscleGroupLinks[targetDay]?.[targetMuscle] || [];
+
+      if (targetLinks.some(l => l.url === link.url)) {
+        return { ...prev, sedes: { ...prev.sedes, [prev.activeSede]: { ...sede, postureLinks: newPostures } } };
+      }
+
+      return {
+        ...prev,
+        sedes: {
+          ...prev.sedes,
+          [prev.activeSede]: {
+            ...sede,
+            postureLinks: newPostures,
+            muscleGroupLinks: {
+              ...sede.muscleGroupLinks,
+              [targetDay]: { ...sede.muscleGroupLinks[targetDay], [targetMuscle]: [...targetLinks, link] }
+            }
+          }
+        }
+      };
+    });
+  };
+
+  const moveMuscleGroupToStretching = (dayName: string, muscle: string, linkId: string) => {
+    setAppState(prev => {
+      if (!prev.activeSede) return prev;
+      const sede = prev.sedes[prev.activeSede];
+      const sourceLinks = sede.muscleGroupLinks[dayName]?.[muscle] || [];
+      const link = sourceLinks.find(l => l.id === linkId);
+      if (!link) return prev;
+
+      const newSourceLinks = sourceLinks.filter(l => l.id !== linkId);
+      if (sede.stretchingLinks.some(l => l.url === link.url)) {
+        return {
+          ...prev,
+          sedes: {
+            ...prev.sedes,
+            [prev.activeSede]: {
+              ...sede,
+              muscleGroupLinks: { ...sede.muscleGroupLinks, [dayName]: { ...sede.muscleGroupLinks[dayName], [muscle]: newSourceLinks } }
+            }
+          }
+        };
+      }
+
+      return {
+        ...prev,
+        sedes: {
+          ...prev.sedes,
+          [prev.activeSede]: {
+            ...sede,
+            stretchingLinks: [...sede.stretchingLinks, link],
+            muscleGroupLinks: {
+              ...sede.muscleGroupLinks,
+              [dayName]: { ...sede.muscleGroupLinks[dayName], [muscle]: newSourceLinks }
+            }
+          }
+        }
+      };
+    });
+  };
+
+  const moveMuscleGroupToPosture = (dayName: string, muscle: string, linkId: string) => {
+    setAppState(prev => {
+      if (!prev.activeSede) return prev;
+      const sede = prev.sedes[prev.activeSede];
+      const sourceLinks = sede.muscleGroupLinks[dayName]?.[muscle] || [];
+      const link = sourceLinks.find(l => l.id === linkId);
+      if (!link) return prev;
+
+      const newSourceLinks = sourceLinks.filter(l => l.id !== linkId);
+      if (sede.postureLinks.some(l => l.url === link.url)) {
+        return {
+          ...prev,
+          sedes: {
+            ...prev.sedes,
+            [prev.activeSede]: {
+              ...sede,
+              muscleGroupLinks: { ...sede.muscleGroupLinks, [dayName]: { ...sede.muscleGroupLinks[dayName], [muscle]: newSourceLinks } }
+            }
+          }
+        };
+      }
+
+      return {
+        ...prev,
+        sedes: {
+          ...prev.sedes,
+          [prev.activeSede]: {
+            ...sede,
+            postureLinks: [...sede.postureLinks, link],
+            muscleGroupLinks: {
+              ...sede.muscleGroupLinks,
+              [dayName]: { ...sede.muscleGroupLinks[dayName], [muscle]: newSourceLinks }
+            }
+          }
+        }
+      };
+    });
+  };
+
   // Fix: Add missing functions for Cardio/Nada tracking.
   const addNadaSession = (session: Omit<NadaSession, 'id' | 'sede' | 'isSavedToSummary' | 'savedState'>) => {
       if (!activeSede) return;
@@ -1692,6 +1901,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     addPostureLink,
     removePostureLink,
     updatePostureLinkName,
+    moveMuscleGroupLink,
+    reorderMuscleGroupLinks,
+    moveStretchingToMuscleGroup,
+    movePostureToMuscleGroup,
+    moveMuscleGroupToStretching,
+    moveMuscleGroupToPosture,
     exportData,
     importData,
     exportSummaryData,
