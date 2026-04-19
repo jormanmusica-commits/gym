@@ -152,7 +152,7 @@ const MuscleGroupModal: React.FC<MuscleGroupModalProps> = ({ isOpen, onClose, da
               <X className="w-6 h-6" />
             </button>
           </div>
-          <div className="grid grid-cols-2 gap-6">
+          <div className={`${config.groups.length === 1 ? 'flex justify-center' : 'grid grid-cols-2 gap-6'}`}>
             {config.groups.map((groupName) => (
               <MuscleLinkManager key={groupName} dayName={dayName} muscleName={groupName} onPlayVideo={(url) => window.open(url, '_blank', 'noopener,noreferrer')} />
             ))}
@@ -176,18 +176,6 @@ const MuscleGroupLinks: React.FC<MuscleGroupLinksProps> = ({ dayName }) => {
   }
   
   const Icon = config.icon || Layers3;
-  const isCardioDay = dayName === 'Día 5';
-
-  if (isCardioDay) {
-    return (
-      <div className="bg-gray-900/60 backdrop-blur-md border border-white/10 rounded-2xl p-2">
-        <h3 className="text-xl font-extrabold text-cyan-400 flex items-center justify-center gap-3 uppercase p-2 tracking-wider">
-            <Icon className="w-7 h-7" />
-            {config.title}
-        </h3>
-      </div>
-    );
-  }
 
   return (
     <>
