@@ -343,12 +343,6 @@ const ConsejosPage: React.FC = () => {
                                     <div key={consejo.id} className="bg-gray-900/40 backdrop-blur-md border border-white/10 rounded-2xl p-6 transition-all hover:border-cyan-500/30">
                                         <div className="flex justify-between items-start gap-4 mb-4">
                                             <div className="flex-grow">
-                                                {consejo.workoutDay && dayConfig[consejo.workoutDay] && (
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        {React.createElement(dayConfig[consejo.workoutDay].icon, { className: "w-4 h-4 text-cyan-400/70" })}
-                                                        <span className="text-[10px] font-bold text-cyan-500/70 uppercase tracking-widest">{dayConfig[consejo.workoutDay].title}</span>
-                                                    </div>
-                                                )}
                                                 {consejo.title && <h3 className="text-xl font-black text-white leading-tight">{consejo.title}</h3>}
                                             </div>
                                             <div className="flex gap-2">
@@ -396,7 +390,6 @@ const ConsejosPage: React.FC = () => {
                                         {config.title}
                                     </span>
                                 </div>
-                                <span className="text-[10px] font-bold text-cyan-500/50 uppercase tracking-[0.2em]">{dayKey}</span>
                             </button>
                         ))}
                     </div>
