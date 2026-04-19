@@ -143,13 +143,13 @@ const SortableVideoLink: React.FC<{
         zIndex: isDragging ? 50 : 0
     };
 
-    const bgColor = type === 'muscle' ? 'bg-cyan-600/10 hover:bg-cyan-600/20' : 
-                   type === 'stretching' ? 'bg-green-600/5 hover:bg-green-600/10' : 
-                   'bg-purple-600/5 hover:bg-purple-600/10';
+    const bgColor = type === 'muscle' ? 'bg-cyan-500/10 hover:bg-cyan-500/15' : 
+                   type === 'stretching' ? 'bg-green-500/10 hover:bg-green-500/15' : 
+                   'bg-purple-500/10 hover:bg-purple-500/15';
     
     const borderColor = type === 'muscle' ? 'border-cyan-500/20' : 
-                       type === 'stretching' ? 'border-green-500/10' : 
-                       'border-purple-500/10';
+                       type === 'stretching' ? 'border-green-500/20' : 
+                       'border-purple-500/20';
 
     const textColor = type === 'muscle' ? 'text-cyan-300' : 
                      type === 'stretching' ? 'text-green-300' : 
@@ -170,10 +170,10 @@ const SortableVideoLink: React.FC<{
                 <GripVertical className="w-3.5 h-3.5" />
             </div>
             
-            <div className={`flex-grow flex items-center justify-between ${bgColor} ${borderColor} border rounded-md transition-all duration-300 overflow-hidden`}>
+            <div className={`flex-grow flex items-center justify-between ${bgColor} ${borderColor} border rounded-xl transition-all duration-300 overflow-hidden`}>
                 <button
                     onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')}
-                    className={`flex-grow text-left truncate py-2 px-3 text-xs font-semibold ${textColor}`}
+                    className={`flex-grow text-left truncate py-3 px-4 text-xs font-bold ${textColor}`}
                     title="Abrir video"
                 >
                     {link.name}
@@ -633,11 +633,11 @@ const ConsejosPage: React.FC = () => {
                                                     {config.groups.map((muscle) => {
                                                         const links = muscleLinks[muscle] || [];
                                                         return (
-                                                            <div key={muscle} className="bg-gray-900/30 border border-white/5 rounded-3xl p-5 flex flex-col h-full">
-                                                                <div className="flex justify-between items-center mb-4">
-                                                                    <h4 className="text-sm font-black text-gray-500 uppercase tracking-[0.2em]">{muscle}</h4>
-                                                                    <button onClick={() => handlePasteMuscleLink(dayKey, muscle)} className="w-8 h-8 flex items-center justify-center bg-orange-500/10 text-orange-400 rounded-lg border border-orange-500/20 hover:bg-orange-500/20 transition-colors">
-                                                                        <Plus className="w-4 h-4" />
+                                                            <div key={muscle} className="bg-gray-900/40 backdrop-blur-md border border-white/10 rounded-2xl p-6 flex flex-col h-full transition-all hover:border-cyan-500/30">
+                                                                <div className="flex justify-between items-start mb-6">
+                                                                    <h4 className="text-xl font-black text-white leading-tight uppercase">{muscle}</h4>
+                                                                    <button onClick={() => handlePasteMuscleLink(dayKey, muscle)} className="p-2.5 bg-orange-500/10 text-orange-400 rounded-xl hover:bg-orange-500/20 transition-all border border-orange-500/20">
+                                                                        <Plus className="w-5 h-5" />
                                                                     </button>
                                                                 </div>
                                                                 <div className="flex-grow">
@@ -667,23 +667,27 @@ const ConsejosPage: React.FC = () => {
                                 })}
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12 pt-12 border-t border-white/10">
-                                    <div className="bg-gray-900/30 border border-white/5 rounded-[2.5rem] p-8">
-                                        <button 
-                                            onClick={() => setIsStretchingExpanded(!isStretchingExpanded)}
-                                            className="w-full flex justify-between items-center mb-6 group"
+                                    <div className="bg-gray-900/40 backdrop-blur-md border border-white/10 rounded-2xl p-6 transition-all hover:border-green-500/30">
+                                        <div 
+                                            className="flex justify-between items-start mb-6 group"
                                         >
-                                            <h3 className="text-xl font-black text-green-400 uppercase tracking-tight flex items-center gap-3">
-                                                <Video className="w-6 h-6"/> 
-                                                Estiramientos
-                                                {isStretchingExpanded ? <ChevronUp className="w-4 h-4 text-green-500/50" /> : <ChevronDown className="w-4 h-4 text-green-500/50" />}
-                                            </h3>
+                                            <button 
+                                                onClick={() => setIsStretchingExpanded(!isStretchingExpanded)}
+                                                className="flex-grow text-left"
+                                            >
+                                                <h3 className="text-xl font-black text-green-400 uppercase tracking-tight flex items-center gap-3">
+                                                    <Video className="w-6 h-6"/> 
+                                                    Estiramientos
+                                                    {isStretchingExpanded ? <ChevronUp className="w-4 h-4 text-green-500/50" /> : <ChevronDown className="w-4 h-4 text-green-500/50" />}
+                                                </h3>
+                                            </button>
                                             <button 
                                                 onClick={(e) => { e.stopPropagation(); handlePasteStretchingLink(); }} 
-                                                className="p-2 bg-green-500/10 text-green-400 rounded-xl border border-green-500/20 hover:bg-green-500/20 transition-colors"
+                                                className="p-2.5 bg-green-500/10 text-green-400 rounded-xl border border-green-500/20 hover:bg-green-500/20 transition-all"
                                             >
                                                 <Plus className="w-5 h-5"/>
                                             </button>
-                                        </button>
+                                        </div>
                                         
                                         {isStretchingExpanded && (
                                             <SortableContext id="stretching" items={stretchingLinks.map(l => `stretching|||${l.id}`)} strategy={verticalListSortingStrategy}>
@@ -697,23 +701,25 @@ const ConsejosPage: React.FC = () => {
                                         )}
                                     </div>
 
-                                    <div className="bg-gray-900/30 border border-white/5 rounded-[2.5rem] p-8">
-                                        <button 
-                                            onClick={() => setIsPostureExpanded(!isPostureExpanded)}
-                                            className="w-full flex justify-between items-center mb-6 group"
-                                        >
-                                            <h3 className="text-xl font-black text-purple-400 uppercase tracking-tight flex items-center gap-3">
-                                                <Video className="w-6 h-6"/> 
-                                                Posturas
-                                                {isPostureExpanded ? <ChevronUp className="w-4 h-4 text-purple-500/50" /> : <ChevronDown className="w-4 h-4 text-purple-500/50" />}
-                                            </h3>
+                                    <div className="bg-gray-900/40 backdrop-blur-md border border-white/10 rounded-2xl p-6 transition-all hover:border-purple-500/30">
+                                        <div className="flex justify-between items-start mb-6 group">
+                                            <button 
+                                                onClick={() => setIsPostureExpanded(!isPostureExpanded)}
+                                                className="flex-grow text-left"
+                                            >
+                                                <h3 className="text-xl font-black text-purple-400 uppercase tracking-tight flex items-center gap-3">
+                                                    <Video className="w-6 h-6"/> 
+                                                    Posturas
+                                                    {isPostureExpanded ? <ChevronUp className="w-4 h-4 text-purple-500/50" /> : <ChevronDown className="w-4 h-4 text-purple-500/50" />}
+                                                </h3>
+                                            </button>
                                             <button 
                                                 onClick={(e) => { e.stopPropagation(); handlePastePostureLink(); }} 
-                                                className="p-2 bg-purple-500/10 text-purple-400 rounded-xl border border-purple-500/20 hover:bg-purple-600/20 transition-colors"
+                                                className="p-2.5 bg-purple-500/10 text-purple-400 rounded-xl border border-purple-500/20 hover:bg-purple-600/20 transition-all"
                                             >
                                                 <Plus className="w-5 h-5"/>
                                             </button>
-                                        </button>
+                                        </div>
 
                                         {isPostureExpanded && (
                                             <SortableContext id="posture" items={postureLinks.map(l => `posture|||${l.id}`)} strategy={verticalListSortingStrategy}>
