@@ -171,7 +171,6 @@ interface MuscleGroupLinksProps {
 
 const MuscleGroupLinks: React.FC<MuscleGroupLinksProps> = ({ dayName }) => {
   const config = dayConfig[dayName];
-  const { setActiveTab, scrollToVideoLibraryDay } = useAppContext();
 
   if (!config) {
     return null;
@@ -179,24 +178,13 @@ const MuscleGroupLinks: React.FC<MuscleGroupLinksProps> = ({ dayName }) => {
   
   const Icon = config.icon || Layers3;
 
-  const handleHeaderClick = () => {
-    setActiveTab('Consejos');
-    scrollToVideoLibraryDay(dayName);
-  };
-
   return (
     <>
-      <div className="bg-gray-900/60 backdrop-blur-md border border-white/10 rounded-2xl p-2 transition-all duration-300 hover:border-cyan-400/30">
-        <button
-          onClick={handleHeaderClick}
-          className="w-full group focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-cyan-500 rounded-lg"
-          aria-label={`Ir a biblioteca de videos de ${config.title} en Consejos`}
-        >
-          <h3 className="text-2xl font-extrabold text-cyan-400 flex items-center justify-center gap-3 uppercase group-hover:text-cyan-300 transition-colors p-2 tracking-wider">
-              <Icon className="w-7 h-7 group-hover:scale-110 transition-transform" />
+      <div className="bg-gray-900/60 backdrop-blur-md border border-white/10 rounded-2xl p-2 transition-all duration-300">
+          <h3 className="text-2xl font-extrabold text-cyan-400 flex items-center justify-center gap-3 uppercase p-2 tracking-wider">
+              <Icon className="w-7 h-7" />
               {config.title}
           </h3>
-        </button>
       </div>
     </>
   );

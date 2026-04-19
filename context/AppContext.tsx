@@ -116,6 +116,7 @@ interface AppContextType {
   addConsejoVideoLink: (consejoId: string, linkUrl: string) => void;
   removeConsejoVideoLink: (consejoId: string, linkId: string) => void;
   updateConsejoVideoLinkName: (consejoId: string, linkId: string, newName: string) => void;
+  updateConsejosTitle: (title: string) => void;
   // Peso
   weightHistory: WeightEntry[];
   addWeightEntry: (entry: Omit<WeightEntry, 'id' | 'imc'>) => void;
@@ -201,6 +202,7 @@ const createInitialSedeData = (): SedeData => {
     summaryCollapsedExercises: [],
     summaryCollapsedSessions: [],
     consejos: [],
+    consejosTitle: 'Notas Personales',
     weightHistory: [],
   };
 };
@@ -954,12 +956,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     updateSedeData(sedeData => ({ ...sedeData, muscleGroupLinks: updater(sedeData.muscleGroupLinks) }));
   };
 
-  const addMuscleGroupLink = (dayName: string, muscle: string, linkUrl: string) => {
+  const addMuscleGroupLink = (dayName: string, muscle: string, linkUrl: string, name?: string) => {
     if (!linkUrl) return;
     updateMuscleGroupLinks(prev => {
       const currentLinks = prev[dayName]?.[muscle] || [];
       if (currentLinks.some(l => l.url === linkUrl)) return prev;
-      const newLink: LinkItem = { id: crypto.randomUUID(), url: linkUrl, name: `Video ${currentLinks.length + 1}` };
+      const newLink: LinkItem = { id: crypto.randomUUID(), url: linkUrl, name: name || `Video ${currentLinks.length + 1}` };
       return { ...prev, [dayName]: { ...prev[dayName], [muscle]: [...currentLinks, newLink] } };
     });
   };
@@ -1006,10 +1008,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }));
   };
 
-  const addStretchingLink = (linkUrl: string) => {
+  const addStretchingLink = (linkUrl: string, name?: string) => {
     updateSedeData(sedeData => {
       if (linkUrl && !sedeData.stretchingLinks.some(l => l.url === linkUrl)) {
-        const newLink: LinkItem = { id: crypto.randomUUID(), url: linkUrl, name: `Video ${sedeData.stretchingLinks.length + 1}` };
+        const newLink: LinkItem = { id: crypto.randomUUID(), url: linkUrl, name: name || `Video ${sedeData.stretchingLinks.length + 1}` };
         return { ...sedeData, stretchingLinks: [...sedeData.stretchingLinks, newLink] };
       }
       return sedeData;
@@ -1024,10 +1026,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     updateSedeData(sedeData => ({ ...sedeData, stretchingLinks: sedeData.stretchingLinks.map(link => (link.id === id ? { ...link, name } : link)) }));
   };
 
-  const addPostureLink = (linkUrl: string) => {
+  const addPostureLink = (linkUrl: string, name?: string) => {
     updateSedeData(sedeData => {
       if (linkUrl && !sedeData.postureLinks.some(l => l.url === linkUrl)) {
-        const newLink: LinkItem = { id: crypto.randomUUID(), url: linkUrl, name: `Video ${sedeData.postureLinks.length + 1}` };
+        const newLink: LinkItem = { id: crypto.randomUUID(), url: linkUrl, name: name || `Video ${sedeData.postureLinks.length + 1}` };
         return { ...sedeData, postureLinks: [...sedeData.postureLinks, newLink] };
       }
       return sedeData;
@@ -1370,6 +1372,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       });
       return { ...sedeData, consejos: newConsejos };
     });
+  };
+
+  const updateConsejosTitle = (title: string) => {
+    updateSedeData(sedeData => ({
+      ...sedeData,
+      consejosTitle: title
+    }));
   };
 
   const updateConsejoVideoLinkName = (consejoId: string, linkId: string, newName: string) => {
@@ -1938,6 +1947,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     clearNadaForm,
     // Consejos
     consejos: activeSedeData?.consejos || [],
+    consejosTitle: activeSedeData?.consejosTitle || 'Notas Personales',
     addConsejo,
     updateConsejo,
     removeConsejo,
@@ -1945,6 +1955,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     addConsejoVideoLink,
     removeConsejoVideoLink,
     updateConsejoVideoLinkName,
+    updateConsejosTitle,
     // Peso
     weightHistory: activeSedeData?.weightHistory || [],
     addWeightEntry,

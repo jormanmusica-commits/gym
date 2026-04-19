@@ -101,6 +101,7 @@ export interface ConsejoItem {
   media: ExerciseMedia[];
   createdAt: string; // ISO string
   videoLinks?: LinkItem[];
+  workoutDay?: string;
 }
 
 export interface WeightEntry {
@@ -126,5 +127,6 @@ export interface SedeData {
   summaryCollapsedExercises: string[];
   summaryCollapsedSessions: string[];
   consejos: ConsejoItem[];
+  consejosTitle?: string;
   weightHistory: WeightEntry[];
 }
