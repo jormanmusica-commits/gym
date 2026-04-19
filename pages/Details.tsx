@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Trash2, Sparkles, X, ClipboardPaste, Pencil, Check } from 'lucide-react';
 import ConfirmationModal from '../components/ConfirmationModal';
+import { extractUrl } from '../lib/utils';
 
 interface StretchingManagerProps {
   isOpen: boolean;
@@ -18,8 +19,9 @@ const StretchingManager: React.FC<StretchingManagerProps> = ({ isOpen, onClose }
   const handlePaste = async () => {
     try {
       const text = await navigator.clipboard.readText();
-      if (text.trim()) {
-        addStretchingLink(text.trim());
+      const linkUrl = extractUrl(text);
+      if (linkUrl) {
+        addStretchingLink(linkUrl);
       }
     } catch (err) {
       console.error('Failed to read clipboard contents: ', err);

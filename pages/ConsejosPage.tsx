@@ -5,6 +5,7 @@ import { useAppContext } from '../context/AppContext';
 import { Lightbulb, Plus, Trash2, Camera, X, Pencil, Check, ChevronLeft, ChevronRight, ClipboardPaste, Shirt, Footprints, Shield, Hand, HeartPulse, Video } from 'lucide-react';
 import type { ConsejoItem, ExerciseMedia, LinkItem } from '../types';
 import ConfirmationModal from '../components/ConfirmationModal';
+import { extractUrl } from '../lib/utils';
 
 // Local Lightbox component (reused from other pages for consistency)
 interface MediaLightboxProps {
@@ -126,8 +127,9 @@ const ConsejosPage: React.FC = () => {
     const handlePasteMuscleLink = async (dayKey: string, muscleName: string) => {
         try {
             const text = await navigator.clipboard.readText();
-            if (text.trim()) {
-                addMuscleGroupLink(dayKey, muscleName, text.trim());
+            const linkUrl = extractUrl(text);
+            if (linkUrl) {
+                addMuscleGroupLink(dayKey, muscleName, linkUrl);
             }
         } catch (err) {
             console.error('Failed to read clipboard contents: ', err);
@@ -137,8 +139,9 @@ const ConsejosPage: React.FC = () => {
     const handlePasteStretchingLink = async () => {
         try {
             const text = await navigator.clipboard.readText();
-            if (text.trim()) {
-                addStretchingLink(text.trim());
+            const linkUrl = extractUrl(text);
+            if (linkUrl) {
+                addStretchingLink(linkUrl);
             }
         } catch (err) {
             console.error('Failed to read clipboard contents: ', err);
@@ -148,8 +151,9 @@ const ConsejosPage: React.FC = () => {
     const handlePastePostureLink = async () => {
         try {
             const text = await navigator.clipboard.readText();
-            if (text.trim()) {
-                addPostureLink(text.trim());
+            const linkUrl = extractUrl(text);
+            if (linkUrl) {
+                addPostureLink(linkUrl);
             }
         } catch (err) {
             console.error('Failed to read clipboard contents: ', err);
@@ -226,8 +230,8 @@ const ConsejosPage: React.FC = () => {
     const handlePasteVideoLinkInModal = async () => {
       try {
         const text = await navigator.clipboard.readText();
-        if (text.trim()) {
-            const linkUrl = text.trim();
+        const linkUrl = extractUrl(text);
+        if (linkUrl) {
             const currentLinks = formData.videoLinks || [];
             if (currentLinks.some(l => l.url === linkUrl)) {
               return;

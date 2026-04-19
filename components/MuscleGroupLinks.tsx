@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Trash2, X, ClipboardPaste, Pencil, Check, Shirt, Footprints, Shield, Hand, Layers3, Dumbbell, HeartPulse } from 'lucide-react';
 import ConfirmationModal from './ConfirmationModal';
+import { extractUrl } from '../lib/utils';
 
 const dayConfig: { [key: string]: { title: string; groups: string[]; icon: React.ElementType } } = {
   'Día 1': { title: 'Pecho y Bíceps', groups: ['Pecho', 'Bíceps'], icon: Shirt },
@@ -27,8 +28,9 @@ const MuscleLinkManager: React.FC<MuscleLinkManagerProps> = ({ dayName, muscleNa
   const handlePaste = async () => {
     try {
       const text = await navigator.clipboard.readText();
-      if (text.trim()) {
-        addMuscleGroupLink(dayName, muscleName, text.trim());
+      const linkUrl = extractUrl(text);
+      if (linkUrl) {
+        addMuscleGroupLink(dayName, muscleName, linkUrl);
       }
     } catch (err) {
       console.error('Failed to read clipboard contents: ', err);

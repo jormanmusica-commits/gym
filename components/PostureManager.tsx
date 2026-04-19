@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Trash2, PersonStanding, ClipboardPaste, Pencil, Check, X } from 'lucide-react';
 import ConfirmationModal from './ConfirmationModal';
+import { extractUrl } from '../lib/utils';
 
 const PostureManager: React.FC = () => {
   const { postureLinks, addPostureLink, removePostureLink, updatePostureLinkName } = useAppContext();
@@ -11,8 +12,9 @@ const PostureManager: React.FC = () => {
   const handlePaste = async () => {
     try {
       const text = await navigator.clipboard.readText();
-      if (text.trim()) {
-        addPostureLink(text.trim());
+      const linkUrl = extractUrl(text);
+      if (linkUrl) {
+        addPostureLink(linkUrl);
       }
     } catch (err) {
       console.error('Failed to read clipboard contents: ', err);
