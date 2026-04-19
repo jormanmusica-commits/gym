@@ -251,6 +251,17 @@ const ConsejosPage: React.FC = () => {
                         </div>
                         <div className="overflow-y-auto pr-2 space-y-6 no-scrollbar flex-grow">
                             <div className="space-y-2">
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Título</label>
+                                <input 
+                                    type="text" 
+                                    value={formData.title} 
+                                    onChange={e => setFormData({...formData, title: e.target.value})} 
+                                    placeholder="Nombre de la nota..." 
+                                    className="w-full bg-black/40 border border-white/10 rounded-xl py-3 px-4 text-white focus:ring-2 focus:ring-cyan-500/50 outline-none font-bold" 
+                                />
+                            </div>
+
+                            <div className="space-y-2">
                                 <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Videos de Referencia</label>
                                 <div className="space-y-2">
                                     {(formData.videoLinks || []).map((link) => (
