@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { Lightbulb, Plus, Trash2, Camera, X, Pencil, Check, ChevronLeft, ChevronRight, ClipboardPaste, Shirt, Footprints, Shield, Hand, HeartPulse, Video, GripVertical } from 'lucide-react';
+import { Lightbulb, Plus, Trash2, Camera, X, Pencil, Check, ChevronLeft, ChevronRight, ClipboardPaste, Shirt, Footprints, Shield, Hand, HeartPulse, Video, GripVertical, ChevronDown, ChevronUp } from 'lucide-react';
 import type { ConsejoItem, ExerciseMedia, LinkItem } from '../types';
 import ConfirmationModal from '../components/ConfirmationModal';
 import { extractUrl } from '../lib/utils';
@@ -212,7 +212,8 @@ const ConsejosPage: React.FC = () => {
         reorderMuscleGroupLinks, reorderStretchingLinks, reorderPostureLinks, 
         moveMuscleGroupLink,
         moveStretchingToMuscleGroup, movePostureToMuscleGroup,
-        moveMuscleGroupToStretching, moveMuscleGroupToPosture
+        moveMuscleGroupToStretching, moveMuscleGroupToPosture,
+        scrollTargetDay, scrollToVideoLibraryDay
     } = useAppContext();
     
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -229,6 +230,40 @@ const ConsejosPage: React.FC = () => {
     // States for Library Links
     const [editingLibLink, setEditingLibLink] = useState<{ type: 'muscle' | 'stretching' | 'posture'; id: string; name: string; day?: string; muscle?: string } | null>(null);
     const [libLinkToDelete, setLibLinkToDelete] = useState<{ type: 'muscle' | 'stretching' | 'posture'; id: string; name: string; day?: string; muscle?: string } | null>(null);
+
+    // Collapsible states
+    const [isNotasExpanded, setIsNotasExpanded] = useState(true);
+    const [isLibraryExpanded, setIsLibraryExpanded] = useState(true);
+    const [expandedDays, setExpandedDays] = useState<{ [key: string]: boolean }>({
+        'Día 1': true,
+        'Día 2': true,
+        'Día 3': true,
+        'Día 4': true,
+        'Día 5': true,
+    });
+    const [isStretchingExpanded, setIsStretchingExpanded] = useState(true);
+    const [isPostureExpanded, setIsPostureExpanded] = useState(true);
+
+    // Effect to handle scrolling to a specific day in the video library
+    useEffect(() => {
+        if (scrollTargetDay) {
+            // Expand relevant sections
+            setIsLibraryExpanded(true);
+            setExpandedDays(prev => ({ ...prev, [scrollTargetDay]: true }));
+
+            // Wait for render/expansion and scroll
+            const timer = setTimeout(() => {
+                const element = document.getElementById(`library-day-${scrollTargetDay.replace(' ', '-')}`);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                // Clear the scroll target
+                scrollToVideoLibraryDay(null);
+            }, 100);
+
+            return () => clearTimeout(timer);
+        }
+    }, [scrollTargetDay, scrollToVideoLibraryDay]);
 
     // Drag and Drop State and Sensors
     const sensors = useSensors(
@@ -410,17 +445,8 @@ const ConsejosPage: React.FC = () => {
         } catch (err) { console.error('Clipboard error:', err); }
     };
 
-    const handlePasteVideoLinkInModal = async () => {
-      try {
-        const text = await navigator.clipboard.readText();
-        const linkUrl = extractUrl(text);
-        if (linkUrl) {
-            const currentLinks = formData.videoLinks || [];
-            if (currentLinks.some(l => l.url === linkUrl)) return;
-            const newLink = { id: crypto.randomUUID(), url: linkUrl, name: `Video ${currentLinks.length + 1}` };
-            setFormData(prev => ({ ...prev, videoLinks: [...currentLinks, newLink] }));
-        }
-      } catch (err) { console.error('Clipboard error:', err); }
+    const toggleDay = (dayKey: string) => {
+        setExpandedDays(prev => ({ ...prev, [dayKey]: !prev[dayKey] }));
     };
 
     return (
@@ -517,141 +543,193 @@ const ConsejosPage: React.FC = () => {
 
             <div className="max-w-4xl mx-auto space-y-10">
                 <section className="space-y-6">
-                    <h1 className="text-3xl font-black text-cyan-400 flex items-center justify-center gap-4 uppercase tracking-tighter drop-shadow-[0_0_15px_rgba(34,211,238,0.4)]">
+                    <button 
+                        onClick={() => setIsNotasExpanded(!isNotasExpanded)}
+                        className="w-full text-3xl font-black text-cyan-400 flex items-center justify-center gap-4 uppercase tracking-tighter drop-shadow-[0_0_15px_rgba(34,211,238,0.4)] hover:brightness-110 transition-all"
+                    >
                         <Lightbulb className="w-8 h-8" />
                         Notas Personales
-                    </h1>
-                    <div className="grid grid-cols-1 gap-4">
-                        {consejos.length === 0 ? (
-                            <div className="text-center p-12 bg-black/20 border-2 border-dashed border-white/5 rounded-3xl">
-                                <Lightbulb className="w-16 h-16 text-gray-700 mx-auto mb-4" />
-                                <h3 className="text-xl font-bold text-gray-400">¿Tienes algún consejo para ti?</h3>
-                                <p className="text-gray-600 max-w-xs mx-auto mt-2">Usa el botón inferior para guardar técnicas, comidas o recordatorios.</p>
-                            </div>
-                        ) : (
-                            consejos.map((consejo, idx) => (
-                                <div key={consejo.id} className="bg-gray-900/40 backdrop-blur-md border border-white/10 rounded-2xl p-6 transition-all hover:border-cyan-500/30">
-                                    <div className="flex justify-between items-start gap-4 mb-4">
-                                        <h3 className="text-xl font-black text-white leading-tight">{consejo.title || "Sin título"}</h3>
-                                        <div className="flex gap-2">
-                                            <button onClick={() => handleOpenModal(consejo)} className="p-2.5 bg-cyan-500/10 text-cyan-400 rounded-xl hover:bg-cyan-500/20 transition"><Pencil className="w-5 h-5"/></button>
-                                            <button onClick={() => setConsejoToDelete(consejo)} className="p-2.5 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 transition"><Trash2 className="w-5 h-5"/></button>
-                                        </div>
-                                    </div>
-                                    {consejo.content && <p className="text-gray-300 leading-relaxed whitespace-pre-wrap">{consejo.content}</p>}
-                                    {consejo.videoLinks && consejo.videoLinks.length > 0 && (
-                                        <div className="mt-6 flex flex-wrap gap-2">
-                                            {consejo.videoLinks.map(link => (
-                                                <button key={link.id} onClick={() => window.open(link.url, '_blank')} className="bg-cyan-600/10 border border-cyan-500/20 rounded-full px-4 py-1.5 text-xs font-bold text-cyan-300 hover:bg-cyan-600/20 transition-all flex items-center gap-2">
-                                                    <Video className="w-3.5 h-3.5" /> {link.name}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-                                    {consejo.media.length > 0 && (
-                                        <div className="mt-6 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                                            {consejo.media.map((m, i) => (
-                                                <button key={i} onClick={() => setLightboxMedia({ allMedia: consejo.media, startIndex: i, consejoId: consejo.id})} className="aspect-square bg-black/40 rounded-xl overflow-hidden border border-white/5">
-                                                    {m.type === 'image' ? <img src={m.dataUrl} className="w-full h-full object-cover" alt="" /> : <video src={m.dataUrl} className="w-full h-full object-cover" />}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
+                        {isNotasExpanded ? <ChevronUp className="w-6 h-6 text-cyan-500/50" /> : <ChevronDown className="w-6 h-6 text-cyan-500/50" />}
+                    </button>
+                    
+                    {isNotasExpanded && (
+                        <div className="grid grid-cols-1 gap-4 animate-fadeIn">
+                            {consejos.length === 0 ? (
+                                <div className="text-center p-12 bg-black/20 border-2 border-dashed border-white/5 rounded-3xl">
+                                    <Lightbulb className="w-16 h-16 text-gray-700 mx-auto mb-4" />
+                                    <h3 className="text-xl font-bold text-gray-400">¿Tienes algún consejo para ti?</h3>
+                                    <p className="text-gray-600 max-w-xs mx-auto mt-2">Usa el botón inferior para guardar técnicas, comidas o recordatorios.</p>
                                 </div>
-                            ))
-                        )}
-                    </div>
+                            ) : (
+                                consejos.map((consejo, idx) => (
+                                    <div key={consejo.id} className="bg-gray-900/40 backdrop-blur-md border border-white/10 rounded-2xl p-6 transition-all hover:border-cyan-500/30">
+                                        <div className="flex justify-between items-start gap-4 mb-4">
+                                            <h3 className="text-xl font-black text-white leading-tight">{consejo.title || "Sin título"}</h3>
+                                            <div className="flex gap-2">
+                                                <button onClick={() => handleOpenModal(consejo)} className="p-2.5 bg-cyan-500/10 text-cyan-400 rounded-xl hover:bg-cyan-500/20 transition"><Pencil className="w-5 h-5"/></button>
+                                                <button onClick={() => setConsejoToDelete(consejo)} className="p-2.5 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 transition"><Trash2 className="w-5 h-5"/></button>
+                                            </div>
+                                        </div>
+                                        {consejo.content && <p className="text-gray-300 leading-relaxed whitespace-pre-wrap">{consejo.content}</p>}
+                                        {consejo.videoLinks && consejo.videoLinks.length > 0 && (
+                                            <div className="mt-6 flex flex-wrap gap-2">
+                                                {consejo.videoLinks.map(link => (
+                                                    <button key={link.id} onClick={() => window.open(link.url, '_blank')} className="bg-cyan-600/10 border border-cyan-500/20 rounded-full px-4 py-1.5 text-xs font-bold text-cyan-300 hover:bg-cyan-600/20 transition-all flex items-center gap-2">
+                                                        <Video className="w-3.5 h-3.5" /> {link.name}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                        {consejo.media.length > 0 && (
+                                            <div className="mt-6 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                                                {consejo.media.map((m, i) => (
+                                                    <button key={i} onClick={() => setLightboxMedia({ allMedia: consejo.media, startIndex: i, consejoId: consejo.id})} className="aspect-square bg-black/40 rounded-xl overflow-hidden border border-white/5">
+                                                        {m.type === 'image' ? <img src={m.dataUrl} className="w-full h-full object-cover" alt="" /> : <video src={m.dataUrl} className="w-full h-full object-cover" />}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    )}
                 </section>
 
                 <section className="pt-10 border-t border-white/10">
-                    <h2 className="text-3xl font-black text-cyan-400 flex items-center justify-center gap-4 uppercase tracking-tighter mb-10 drop-shadow-[0_0_15px_rgba(34,211,238,0.4)]">
+                    <button 
+                        onClick={() => setIsLibraryExpanded(!isLibraryExpanded)}
+                        className="w-full text-3xl font-black text-cyan-400 flex items-center justify-center gap-4 uppercase tracking-tighter mb-10 drop-shadow-[0_0_15px_rgba(34,211,238,0.4)] hover:brightness-110 transition-all"
+                    >
                         <Video className="w-8 h-8" />
                         Biblioteca de Videos
-                    </h2>
+                        {isLibraryExpanded ? <ChevronUp className="w-6 h-6 text-cyan-500/50" /> : <ChevronDown className="w-6 h-6 text-cyan-500/50" />}
+                    </button>
 
-                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                        <div className="space-y-12">
-                            {Object.entries(dayConfig).map(([dayKey, config]) => {
-                                const muscleLinks = muscleGroupLinks[dayKey] || {};
-                                return (
-                                    <div key={dayKey} className="space-y-6">
-                                        <div className="flex items-center gap-4">
-                                            <div className="h-0.5 flex-grow bg-gradient-to-r from-transparent to-white/10"></div>
-                                            <div className="flex items-center gap-2 px-6 py-2 bg-white/5 rounded-full border border-white/10">
-                                                <config.icon className="w-5 h-5 text-cyan-400" />
-                                                <span className="text-lg font-black uppercase tracking-widest text-white">{config.title}</span>
-                                            </div>
-                                            <div className="h-0.5 flex-grow bg-gradient-to-l from-transparent to-white/10"></div>
-                                        </div>
+                    {isLibraryExpanded && (
+                        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                            <div className="space-y-12 animate-fadeIn">
+                                {Object.entries(dayConfig).map(([dayKey, config]) => {
+                                    const muscleLinks = muscleGroupLinks[dayKey] || {};
+                                    const isDayExpanded = expandedDays[dayKey];
 
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                            {config.groups.map((muscle) => {
-                                                const links = muscleLinks[muscle] || [];
-                                                return (
-                                                    <div key={muscle} className="bg-gray-900/30 border border-white/5 rounded-3xl p-5 flex flex-col h-full">
-                                                        <div className="flex justify-between items-center mb-4">
-                                                            <h4 className="text-sm font-black text-gray-500 uppercase tracking-[0.2em]">{muscle}</h4>
-                                                            <button onClick={() => handlePasteMuscleLink(dayKey, muscle)} className="w-8 h-8 flex items-center justify-center bg-orange-500/10 text-orange-400 rounded-lg border border-orange-500/20 hover:bg-orange-500/20 transition-colors">
-                                                                <Plus className="w-4 h-4" />
-                                                            </button>
-                                                        </div>
-                                                        <div className="flex-grow">
-                                                            <SortableContext id={`${dayKey}-${muscle}`} items={links.map(l => `muscle|${dayKey}|${muscle}|${l.id}`)} strategy={verticalListSortingStrategy}>
-                                                                <div className="space-y-2 min-h-[40px]">
-                                                                    {links.length > 0 ? links.map(link => (
-                                                                        <SortableVideoLink 
-                                                                            key={link.id} 
-                                                                            link={link} 
-                                                                            type="muscle" 
-                                                                            day={dayKey} 
-                                                                            muscle={muscle} 
-                                                                            onEdit={() => setEditingLibLink({ type: 'muscle', id: link.id, name: link.name, day: dayKey, muscle })}
-                                                                            onDelete={() => setLibLinkToDelete({ type: 'muscle', id: link.id, name: link.name, day: dayKey, muscle })}
-                                                                        />
-                                                                    )) : <div className="text-[10px] text-gray-700 italic text-center py-4 border border-dashed border-white/5 rounded-xl">Arrastra videos aquí o pega uno nuevo</div>}
+                                    return (
+                                        <div key={dayKey} id={`library-day-${dayKey.replace(' ', '-')}`} className="space-y-6">
+                                            <button 
+                                                onClick={() => toggleDay(dayKey)}
+                                                className="w-full flex items-center gap-4 group"
+                                            >
+                                                <div className="h-0.5 flex-grow bg-gradient-to-r from-transparent to-white/10"></div>
+                                                <div className="flex items-center gap-2 px-6 py-2 bg-white/5 rounded-full border border-white/10 group-hover:border-cyan-500/30 transition-all">
+                                                    <config.icon className="w-5 h-5 text-cyan-400" />
+                                                    <span className="text-lg font-black uppercase tracking-widest text-white">{config.title}</span>
+                                                    {isDayExpanded ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
+                                                </div>
+                                                <div className="h-0.5 flex-grow bg-gradient-to-l from-transparent to-white/10"></div>
+                                            </button>
+
+                                            {isDayExpanded && (
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fadeIn">
+                                                    {config.groups.map((muscle) => {
+                                                        const links = muscleLinks[muscle] || [];
+                                                        return (
+                                                            <div key={muscle} className="bg-gray-900/30 border border-white/5 rounded-3xl p-5 flex flex-col h-full">
+                                                                <div className="flex justify-between items-center mb-4">
+                                                                    <h4 className="text-sm font-black text-gray-500 uppercase tracking-[0.2em]">{muscle}</h4>
+                                                                    <button onClick={() => handlePasteMuscleLink(dayKey, muscle)} className="w-8 h-8 flex items-center justify-center bg-orange-500/10 text-orange-400 rounded-lg border border-orange-500/20 hover:bg-orange-500/20 transition-colors">
+                                                                        <Plus className="w-4 h-4" />
+                                                                    </button>
                                                                 </div>
-                                                            </SortableContext>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
+                                                                <div className="flex-grow">
+                                                                    <SortableContext id={`${dayKey}-${muscle}`} items={links.map(l => `muscle|${dayKey}|${muscle}|${l.id}`)} strategy={verticalListSortingStrategy}>
+                                                                        <div className="space-y-2 min-h-[40px]">
+                                                                            {links.length > 0 ? links.map(link => (
+                                                                                <SortableVideoLink 
+                                                                                    key={link.id} 
+                                                                                    link={link} 
+                                                                                    type="muscle" 
+                                                                                    day={dayKey} 
+                                                                                    muscle={muscle} 
+                                                                                    onEdit={() => setEditingLibLink({ type: 'muscle', id: link.id, name: link.name, day: dayKey, muscle })}
+                                                                                    onDelete={() => setLibLinkToDelete({ type: 'muscle', id: link.id, name: link.name, day: dayKey, muscle })}
+                                                                                />
+                                                                            )) : <div className="text-[10px] text-gray-700 italic text-center py-4 border border-dashed border-white/5 rounded-xl">Arrastra videos aquí o pega uno nuevo</div>}
+                                                                        </div>
+                                                                    </SortableContext>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
                                         </div>
-                                    </div>
-                                );
-                            })}
+                                    );
+                                })}
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12 pt-12 border-t border-white/10">
-                                <div className="bg-gray-900/30 border border-white/5 rounded-[2.5rem] p-8">
-                                    <div className="flex justify-between items-center mb-6">
-                                        <h3 className="text-xl font-black text-green-400 uppercase tracking-tight flex items-center gap-3"><Video className="w-6 h-6"/> Estiramientos</h3>
-                                        <button onClick={handlePasteStretchingLink} className="p-2 bg-green-500/10 text-green-400 rounded-xl border border-green-500/20 hover:bg-green-500/20 transition-colors"><Plus className="w-5 h-5"/></button>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12 pt-12 border-t border-white/10">
+                                    <div className="bg-gray-900/30 border border-white/5 rounded-[2.5rem] p-8">
+                                        <button 
+                                            onClick={() => setIsStretchingExpanded(!isStretchingExpanded)}
+                                            className="w-full flex justify-between items-center mb-6 group"
+                                        >
+                                            <h3 className="text-xl font-black text-green-400 uppercase tracking-tight flex items-center gap-3">
+                                                <Video className="w-6 h-6"/> 
+                                                Estiramientos
+                                                {isStretchingExpanded ? <ChevronUp className="w-4 h-4 text-green-500/50" /> : <ChevronDown className="w-4 h-4 text-green-500/50" />}
+                                            </h3>
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); handlePasteStretchingLink(); }} 
+                                                className="p-2 bg-green-500/10 text-green-400 rounded-xl border border-green-500/20 hover:bg-green-500/20 transition-colors"
+                                            >
+                                                <Plus className="w-5 h-5"/>
+                                            </button>
+                                        </button>
+                                        
+                                        {isStretchingExpanded && (
+                                            <SortableContext id="stretching" items={stretchingLinks.map(l => `stretching|||${l.id}`)} strategy={verticalListSortingStrategy}>
+                                                <div className="space-y-2 min-h-[40px] animate-fadeIn">
+                                                    {stretchingLinks.map(link => (
+                                                        <SortableVideoLink key={link.id} link={link} type="stretching" onEdit={() => setEditingLibLink({ type: 'stretching', id: link.id, name: link.name })} onDelete={() => setLibLinkToDelete({ type: 'stretching', id: link.id, name: link.name })} />
+                                                    ))}
+                                                    {stretchingLinks.length === 0 && <div className="text-[10px] text-gray-700 italic text-center py-6 border border-dashed border-white/5 rounded-2xl">Sin estiramientos</div>}
+                                                </div>
+                                            </SortableContext>
+                                        )}
                                     </div>
-                                    <SortableContext id="stretching" items={stretchingLinks.map(l => `stretching|||${l.id}`)} strategy={verticalListSortingStrategy}>
-                                        <div className="space-y-2 min-h-[40px]">
-                                            {stretchingLinks.map(link => (
-                                                <SortableVideoLink key={link.id} link={link} type="stretching" onEdit={() => setEditingLibLink({ type: 'stretching', id: link.id, name: link.name })} onDelete={() => setLibLinkToDelete({ type: 'stretching', id: link.id, name: link.name })} />
-                                            ))}
-                                            {stretchingLinks.length === 0 && <div className="text-[10px] text-gray-700 italic text-center py-6 border border-dashed border-white/5 rounded-2xl">Sin estiramientos</div>}
-                                        </div>
-                                    </SortableContext>
-                                </div>
-                                <div className="bg-gray-900/30 border border-white/5 rounded-[2.5rem] p-8">
-                                    <div className="flex justify-between items-center mb-6">
-                                        <h3 className="text-xl font-black text-purple-400 uppercase tracking-tight flex items-center gap-3"><Video className="w-6 h-6"/> Posturas</h3>
-                                        <button onClick={handlePastePostureLink} className="p-2 bg-purple-500/10 text-purple-400 rounded-xl border border-purple-500/20 hover:bg-purple-600/20 transition-colors"><Plus className="w-5 h-5"/></button>
+
+                                    <div className="bg-gray-900/30 border border-white/5 rounded-[2.5rem] p-8">
+                                        <button 
+                                            onClick={() => setIsPostureExpanded(!isPostureExpanded)}
+                                            className="w-full flex justify-between items-center mb-6 group"
+                                        >
+                                            <h3 className="text-xl font-black text-purple-400 uppercase tracking-tight flex items-center gap-3">
+                                                <Video className="w-6 h-6"/> 
+                                                Posturas
+                                                {isPostureExpanded ? <ChevronUp className="w-4 h-4 text-purple-500/50" /> : <ChevronDown className="w-4 h-4 text-purple-500/50" />}
+                                            </h3>
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); handlePastePostureLink(); }} 
+                                                className="p-2 bg-purple-500/10 text-purple-400 rounded-xl border border-purple-500/20 hover:bg-purple-600/20 transition-colors"
+                                            >
+                                                <Plus className="w-5 h-5"/>
+                                            </button>
+                                        </button>
+
+                                        {isPostureExpanded && (
+                                            <SortableContext id="posture" items={postureLinks.map(l => `posture|||${l.id}`)} strategy={verticalListSortingStrategy}>
+                                                <div className="space-y-2 min-h-[40px] animate-fadeIn">
+                                                    {postureLinks.map(link => (
+                                                        <SortableVideoLink key={link.id} link={link} type="posture" onEdit={() => setEditingLibLink({ type: 'posture', id: link.id, name: link.name })} onDelete={() => setLibLinkToDelete({ type: 'posture', id: link.id, name: link.name })} />
+                                                    ))}
+                                                    {postureLinks.length === 0 && <div className="text-[10px] text-gray-700 italic text-center py-6 border border-dashed border-white/5 rounded-2xl">Sin posturas</div>}
+                                                </div>
+                                            </SortableContext>
+                                        )}
                                     </div>
-                                    <SortableContext id="posture" items={postureLinks.map(l => `posture|||${l.id}`)} strategy={verticalListSortingStrategy}>
-                                        <div className="space-y-2 min-h-[40px]">
-                                            {postureLinks.map(link => (
-                                                <SortableVideoLink key={link.id} link={link} type="posture" onEdit={() => setEditingLibLink({ type: 'posture', id: link.id, name: link.name })} onDelete={() => setLibLinkToDelete({ type: 'posture', id: link.id, name: link.name })} />
-                                            ))}
-                                            {postureLinks.length === 0 && <div className="text-[10px] text-gray-700 italic text-center py-6 border border-dashed border-white/5 rounded-2xl">Sin posturas</div>}
-                                        </div>
-                                    </SortableContext>
                                 </div>
                             </div>
-                        </div>
-                    </DndContext>
+                        </DndContext>
+                    )}
                 </section>
             </div>
 

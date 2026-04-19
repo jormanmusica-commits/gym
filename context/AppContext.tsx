@@ -17,6 +17,7 @@ interface AppState {
   summaryLogs: ExerciseLog[];
   sedeOrder: string[];
   activeTab: string;
+  scrollTargetDay: string | null;
   // Fix: Add state for Cardio/Nada sessions.
   dailyNadaSessions: NadaSession[];
   summaryNadaSessions: NadaSession[];
@@ -26,9 +27,11 @@ interface AppState {
 interface AppContextType {
   activeSede: string | null;
   activeTab: string;
+  scrollTargetDay: string | null;
   sedeNames: string[];
   setActiveSede: (sede: string | null) => void;
   setActiveTab: (tab: string) => void;
+  scrollToVideoLibraryDay: (dayKey: string | null) => void;
   renameSede: (oldName: string, newName: string) => boolean;
   removeSedeAndData: (sedeName: string) => void;
   removeSedeOnly: (sedeName: string) => void;
@@ -273,6 +276,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         summaryNadaSessions: [],
         sedeOrder: Object.keys(initialSedes),
         activeTab: 'Inicio',
+        scrollTargetDay: null,
         simulatedDate: null,
     };
     try {
@@ -566,6 +570,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   
   const setActiveTab = (tab: string) => {
     setAppState(prev => ({ ...prev, activeTab: tab }));
+  };
+
+  const scrollToVideoLibraryDay = (dayKey: string | null) => {
+    setAppState(prev => ({ ...prev, scrollTargetDay: dayKey }));
   };
 
   const renameSede = (oldName: string, newName: string): boolean => {
@@ -1852,9 +1860,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const value: AppContextType = {
     activeSede,
     activeTab: appState.activeTab,
+    scrollTargetDay: appState.scrollTargetDay,
     sedeNames: appState.sedeOrder,
     setActiveSede,
     setActiveTab,
+    scrollToVideoLibraryDay,
     renameSede,
     removeSedeAndData,
     removeSedeOnly,
@@ -1907,6 +1917,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     movePostureToMuscleGroup,
     moveMuscleGroupToStretching,
     moveMuscleGroupToPosture,
+    reorderStretchingLinks,
+    reorderPostureLinks,
     exportData,
     importData,
     exportSummaryData,
